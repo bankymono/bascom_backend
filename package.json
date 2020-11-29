@@ -1,0 +1,26 @@
+{
+  "name": "bascom_backend",
+  "version": "1.0.0",
+  "description": "backend for bascom project management tool",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bankymono/bascom_backend.git"
+  },
+  "author": "Ayodeji Bankole and Sophia Daniels",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bankymono/bascom_backend/issues"
+  },
+  "homepage": "https://github.com/bankymono/bascom_backend#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mysql": "^2.18.1",
+    "nodemailer": "^6.4.16"
+  }
+}
