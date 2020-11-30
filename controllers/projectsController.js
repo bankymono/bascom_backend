@@ -11,7 +11,7 @@ const projectsController = (app) =>{
     app.get('/projects',(req,res)=>{
         connection.query("SELECT * from projects", (err,resp)=>{
             // delete resp[0].password
-            resp.map( user => delete user.password )
+
             res.send(resp)
         })
     })
