@@ -1,8 +1,6 @@
 const tasksController = (app) =>{
     const connection = require('../models/db')
     const bcrypt = require('bcrypt')
-
-
     
     
     // tasks api
@@ -10,7 +8,7 @@ const tasksController = (app) =>{
     app.get('/tasks',(req,res)=>{
         connection.query("SELECT * from tasks", (err,resp)=>{
            
-            resp.map( user => delete user.password )
+
             res.send(resp)
         })
     })
@@ -19,7 +17,7 @@ const tasksController = (app) =>{
     //get tasks with user Id
     app.get('/tasks/:id',(req,res)=>{
         connection.query(`SELECT * from tasks where id = ${req.params.id}`, (err,resp)=>{
-            delete resp[0].password
+            
             res.send(resp[0])
         })
     
@@ -27,8 +25,7 @@ const tasksController = (app) =>{
     
     app.post('/tasks',(req,res)=>{
         
-       
-            connection.query(`insert into tasks (name, description,) 
+            connection.query(`insert into tasks (name, description) 
                     values('${req.body.name}',
                      '${req.body.description}')`, (errq,resp)=>{
                          if (errq) throw errq
@@ -36,7 +33,7 @@ const tasksController = (app) =>{
             })
     })
 
-    
+}
 //     app.put('/tasks/:id',(req,res)=>{
 //         if(req.body.name){    
 //             connection.query(`UPDATE task SET 
