@@ -27,9 +27,8 @@ const projectsController = (app) =>{
     app.post('/projects',(req,res)=>{
         
         // res.send(req.body)
-            connection.query(`insert into projects (name,teamId, description,) 
+            connection.query(`insert into projects (name, description) 
                     values('${req.body.name}',
-                     '${req.body.teamId}',
                      '${req.body.description}')`, (errq,resp)=>{
                          if (errq) throw errq
                          res.send("successfully created!")
