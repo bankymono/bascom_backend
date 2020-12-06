@@ -1,11 +1,11 @@
 const tasksController = (app) =>{
     const connection = require('../models/db')
     const bcrypt = require('bcrypt')
-    
+    const auth = require("./authController"); //Authorization controller    
     
     // tasks api
     
-    app.get('/tasks',(req,res)=>{
+    app.get('/tasks', auth.authenticate,auth.viewTask,(req,res)=>{
         connection.query("SELECT * from tasks", (err,resp)=>{
            
 
@@ -15,7 +15,7 @@ const tasksController = (app) =>{
     
 
     //get tasks with user Id
-    app.get('/tasks/:id',(req,res)=>{
+    app.get('/tasks/:id',auth.authenticate,auth.viewTask,(req,res)=>{
         connection.query(`SELECT * from tasks where id = ${req.params.id}`, (err,resp)=>{
             
             res.send(resp[0])
