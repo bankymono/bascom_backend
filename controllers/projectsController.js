@@ -64,9 +64,6 @@ const deleteProject = (req,res)=>{
     })
 }
 
-<<<<<<< HEAD
-module.exports = projectsController;
-=======
 module.exports = {
     getProjects,
     getSingleProject,
@@ -74,4 +71,3 @@ module.exports = {
     updateProject,
     deleteProject
 }
->>>>>>> test-branch
