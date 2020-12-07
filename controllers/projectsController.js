@@ -70,4 +70,4 @@ const projectsController = (app) =>{
     })
 }
 
-module.exports = projectsController
+module.exports = projectsController;

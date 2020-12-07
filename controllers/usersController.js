@@ -10,6 +10,7 @@ const usersController = (app) =>{
         res.send('Welcome to BASCOM API')
     })
     
+    
     // users api
     app.get('/users', auth.authenticate, auth.viewUser,(req,res)=>{
         connection.query("SELECT * from users", (err,resp)=>{
