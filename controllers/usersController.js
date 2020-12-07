@@ -1,82 +1,114 @@
-const usersController = (app) =>{
-    const connection = require('../models/db')
-    const bcrypt = require('bcrypt');
-    require("dotenv").config();
-    const jwt = require("jsonwebtoken"); 
-    const auth = require("./authController"); //Authorization controller
+const connection = require('../models/db')
+const bcrypt = require('bcrypt');
+require("dotenv").config();
+const jwt = require("jsonwebtoken"); 
 
-
-    app.get('/',(req,res)=>{
+const usersController = {
+    root: (req,res)=>{
         res.send('Welcome to BASCOM API')
-    })
-    
-    // users api
-    app.get('/users', auth.authenticate, auth.viewUser,(req,res)=>{
+    },
+    getUsers: (req,res)=>{
         connection.query("SELECT * from users", (err,resp)=>{
             // delete resp[0].password
             resp.map( user => delete user.password )
             res.send(resp)
         })
-    })
-    
-    // Get user with id
-    app.get('/users/:id', auth.authenticate, auth.viewUser,(req,res)=>{
+    },
+    getSingleUser: (req,res)=>{
         connection.query(`SELECT * from users where id = ${req.params.id}`, (err,resp)=>{
             delete resp[0].password
             res.send(resp[0])
         })
-    
-    })
-   
-    // Admin registers
-    app.post('/users', auth.authenticate, auth.addUser,(req,res)=>{
-
+    },
+    internalUserSignup: (req,res)=>{
         bcrypt.hash(req.body.password,10,(err,hash)=>{
             if(err) throw err
-
             // res.send(req.body)
             connection.query(`insert into users (firstName,lastName, email, password, isEnabled) 
-                    values('${req.body.firstName}',
-                     '${req.body.lastName}',
-                     '${req.body.email}', 
-                     '${hash}',true)`, (errq,resp)=>{
-                         if (errq) return res.send("Email already exist")
-                         connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 1)`,(err,resp)=>{
+                values('${req.body.firstName}',
+                    '${req.body.lastName}',
+                    '${req.body.email}', 
+                    '${hash}',true)`, (errq,resp)=>{
+                        if (errq) return res.send("Email already exist")
+                        connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 1)`,(err,resp)=>{
                             if (err) return res.status(500).send('Internal error')
                             res.send('Successfully added internal user!') 
-                         })
                         })
-        })
-    })
-
-    // User signup
-    app.post('/users/signup',(req,res)=>{
-
+                    })
+                })
+    },
+    signUp: (req,res)=>{
         bcrypt.hash(req.body.password,10,(err,hash)=>{
             if(err) throw err
-
             // res.send(req.body)
             connection.query(`insert into users (firstName,lastName, email, password, isEnabled) 
-                    values('${req.body.firstName}',
-                     '${req.body.lastName}',
-                     '${req.body.email}', 
-                     '${hash}',true)`, (errq,resp)=>{
-                            if (errq) return res.send("Email already exist")
-                            connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 3)`,(err,resp)=>{
-                                if (err) return res.status(500).send('Internal Error!')
-                                res.send('Signup successful!') 
-                             })
+                values('${req.body.firstName}',
+                    '${req.body.lastName}',
+                    '${req.body.email}', 
+                    '${hash}',true)`, (errq,resp)=>{
+                        if (errq) return res.send("Email already exist")
+                        connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 3)`,(err,resp)=>{
+                            if (err) return res.status(500).send('Internal Error!')
+                            res.send('Signup successful!') 
+                        })
             })
         })
-    })
+    },
+    userLogin: (req,res)=>{
+        connection.query(`select * from users where email = '${req.body.email}' `, (err,resp)=>{
+            if (err || resp.length < 1){
+                res.statusCode=401
+                res.send('Invalid username or password')     
+            }else{
+                bcrypt.compare(req.body.password,resp[0].password,(errhash,success)=>{
+                    if(errhash){
+                        return res.status(500).send('Internal error')
+                    }
+                    if(success == true){
+                        connection.query(`select permissionName 
+                            from permissions inner join role_permission 
+                            on permissions.id = role_permission.permissionId 
+                            inner join users_role 
+                            on role_permission.roleId = users_role.roleId 
+                            inner join users 
+                            on users.id = users_role.userId where users.id = ${resp[0].id}`,
+                            (err, userPermissions) => {
+                                if (err) return res.status(401).send(err);
+                                resp[0].permissions = userPermissions.map(userPerm => userPerm.permissionName);
+                                  
+                                let data = { data: resp[0] };
+    
+                                let token = jwt.sign(
+                                    data,
+                                    process.env.ACCESS_TOKEN_SECRET,
+                                    {
+                                      expiresIn: process.env.ACCESS_TOKEN_LIFE,
+                                    }
+                                );
+    
+                                let tokenData = {
+                                    data: resp[0],
+                                    accessToken: token,
+                                };
+                                res.send(tokenData);
+                            })
+                    }else{
+                            res.status(401).send('Invalid username or password')
+                    }
+    
+                })
+            }
+          
+        })
+    },
 
-    app.put('/users/:id',auth.authenticate, auth.editUser,(req,res)=>{
+    updateUser: (req,res)=>{
         if(req.body.password){
             bcrypt.hash(req.body.password,10,(err,hash)=>{
                 if(err) throw err
                 connection.query(`UPDATE users SET 
-                     password='${hash}' WHERE id=${req.params.id}`, (err,resp)=>{
-                    if (err) throw err
+                    password='${hash}' WHERE id=${req.params.id}`, (err,resp)=>{
+                        if (err) throw err
                 })        
             })
         }
@@ -84,7 +116,7 @@ const usersController = (app) =>{
             connection.query(`UPDATE users SET 
                 firstName='${req.body.firstName}'
                 WHERE id=${req.params.id}`, (err,resp)=>{
-                if (err) throw err
+                    if (err) throw err
             })
         }
         if(req.body.lastName){
@@ -92,14 +124,14 @@ const usersController = (app) =>{
                 lastName='${req.body.lastName}'
                 WHERE id=${req.params.id}`, (err,resp)=>{
                     if (err) throw err
-                })
+            })
         }
         if(req.body.otherName){
             connection.query(`UPDATE users SET 
                 otherName='${req.body.otherName}'
                 WHERE id=${req.params.id}`, (err,resp)=>{
                     if (err) throw err
-                })
+            })
         }
         if(req.body.email){
             connection.query("SELECT * from users", (err,resp)=>{
@@ -109,77 +141,24 @@ const usersController = (app) =>{
                         res.send('Email already exist!')
                     }else{
                         connection.query(`UPDATE users SET  
-                                        email='${req.body.email}', 
-                                        WHERE id=${req.params.id}`, (err,resp)=>{
-                                                if (err) throw err
-                                        })
+                            email='${req.body.email}', 
+                            WHERE id=${req.params.id}`, (err,resp)=>{
+                                if (err) throw err
+                        })
                     }
                 })
             })
         } 
+        res.send("successfully updated")
+    },
 
-            res.send("successfully updated")
-    })
-    
-    app.delete('/users/:id',auth.authenticate, auth.deleteUser, (req,res)=>{
-    //  handling delete
+    deleteUser: (req,res)=>{
+        //  handling delete
         connection.query(`DELETE FROM users WHERE  id=${req.params.id}`, (err,resp)=>{
             if (err) throw err
             res.send(`successfully deleted user with id ${req.params.id}`)
         })
-    })
-
-
-
-    //login api
-
-    app.post('/users/login', (req,res)=>{
-        connection.query(`select * from users where email = '${req.body.email}' `, (err,resp)=>{
-          if (err || resp.length < 1){
-              res.statusCode=401
-              res.send('Invalid username or password')     
-          }else{
-                bcrypt.compare(req.body.password,resp[0].password,(errhash,success)=>{
-                    if(errhash){
-                        return res.status(500).send('Internal error')
-                    }
-                    if(success == true){
-                        connection.query(`select permissionName 
-                                    from permissions inner join role_permission 
-                                    on permissions.id = role_permission.permissionId 
-                                    inner join users_role 
-                                    on role_permission.roleId = users_role.roleId 
-                                    inner join users 
-                                    on users.id = users_role.userId where users.id = ${resp[0].id}`,
-                            (err, userPermissions) => {
-                              if (err) return res.status(401).send(err);
-                              resp[0].permissions = userPermissions.map(userPerm => userPerm.permissionName);
-                              
-                              let data = { data: resp[0] };
-
-                              let token = jwt.sign(
-                                data,
-                                process.env.ACCESS_TOKEN_SECRET,
-                                {
-                                  expiresIn: process.env.ACCESS_TOKEN_LIFE,
-                                }
-                              );
-
-                              let tokenData = {
-                                data: resp[0],
-                                accessToken: token,
-                              };
-                              res.send(tokenData);
-                            })
-                    }else{
-                        res.status(401).send('Invalid username or password')
-                    }
-
-            })
-          }
-      
-        })
-      })
+    }
 }
 
 module.exports = usersController
