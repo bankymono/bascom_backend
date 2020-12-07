@@ -1,14 +1,14 @@
 const projectsController = (app) =>{
     const connection = require('../models/db')
     const bcrypt = require('bcrypt')
-
+    const auth = require("./authController"); //Authorization controller
 
     // app.get('/',(req,res)=>{
     //     res.send('Welcome to BASCOM API')
     // })
     
     // projects api
-    app.get('/projects',(req,res)=>{
+    app.get('/projects', auth.authenticate, auth.viewProject,(req,res)=>{
         connection.query("SELECT * from projects", (err,resp)=>{
             // delete resp[0].password
 
@@ -16,7 +16,7 @@ const projectsController = (app) =>{
         })
     })
     
-    app.get('/projects/:id',(req,res)=>{
+    app.get('/projects/:id',auth.authenticate, auth.viewProject,(req,res)=>{
         connection.query(`SELECT * from projects where id = ${req.params.id}`, (err,resp)=>{
             delete resp[0].password
             res.send(resp[0])
@@ -36,7 +36,7 @@ const projectsController = (app) =>{
     })
 
     
-    app.put('/projects/:id',(req,res)=>{
+    app.put('/projects/:id',auth.authenticate, auth.editProject,(req,res)=>{
         if(req.body.name){    
             connection.query(`UPDATE projects SET 
                 name='${req.body.name}'
@@ -61,7 +61,7 @@ const projectsController = (app) =>{
         res.send("successfully updated")
     })
     
-    app.delete('/projects/:id',(req,res)=>{
+    app.delete('/projects/:id',auth.authenticate, auth.deleteProject,(req,res)=>{
     //  handling delete
         connection.query(`DELETE FROM projects WHERE  id=${req.params.id}`, (err,resp)=>{
             if (err) throw err

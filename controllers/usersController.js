@@ -1,6 +1,9 @@
 const usersController = (app) =>{
     const connection = require('../models/db')
-    const bcrypt = require('bcrypt')
+    const bcrypt = require('bcrypt');
+    require("dotenv").config();
+    const jwt = require("jsonwebtoken"); 
+    const auth = require("./authController"); //Authorization controller
 
 
     app.get('/',(req,res)=>{
@@ -8,7 +11,7 @@ const usersController = (app) =>{
     })
     
     // users api
-    app.get('/users',(req,res)=>{
+    app.get('/users', auth.authenticate, auth.viewUser,(req,res)=>{
         connection.query("SELECT * from users", (err,resp)=>{
             // delete resp[0].password
             resp.map( user => delete user.password )
@@ -16,33 +19,58 @@ const usersController = (app) =>{
         })
     })
     
-    app.get('/users/:id',(req,res)=>{
+    // Get user with id
+    app.get('/users/:id', auth.authenticate, auth.viewUser,(req,res)=>{
         connection.query(`SELECT * from users where id = ${req.params.id}`, (err,resp)=>{
             delete resp[0].password
             res.send(resp[0])
         })
     
     })
-    
+   
+    // Admin registers
+    app.post('/users', auth.authenticate, auth.addUser,(req,res)=>{
+
+        bcrypt.hash(req.body.password,10,(err,hash)=>{
+            if(err) throw err
+
+            // res.send(req.body)
+            connection.query(`insert into users (firstName,lastName, email, password, isEnabled) 
+                    values('${req.body.firstName}',
+                     '${req.body.lastName}',
+                     '${req.body.email}', 
+                     '${hash}',true)`, (errq,resp)=>{
+                         if (errq) return res.send("Email already exist")
+                         connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 1)`,(err,resp)=>{
+                            if (err) return res.status(500).send('Internal error')
+                            res.send('Successfully added internal user!') 
+                         })
+                        })
+        })
+    })
+
+    // User signup
     app.post('/users/signup',(req,res)=>{
 
         bcrypt.hash(req.body.password,10,(err,hash)=>{
             if(err) throw err
 
-        // res.send(req.body)
-            connection.query(`insert into users (firstName,lastName, otherName, email, password, isEnabled) 
+            // res.send(req.body)
+            connection.query(`insert into users (firstName,lastName, email, password, isEnabled) 
                     values('${req.body.firstName}',
                      '${req.body.lastName}',
-                     '${req.body.otherName}', 
                      '${req.body.email}', 
                      '${hash}',true)`, (errq,resp)=>{
-                            if (errq) throw errq
-                            res.send("successfully created!")
+                            if (errq) return res.send("Email already exist")
+                            connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 3)`,(err,resp)=>{
+                                if (err) return res.status(500).send('Internal Error!')
+                                res.send('Signup successful!') 
+                             })
             })
         })
     })
 
-    app.put('/users/:id',(req,res)=>{
+    app.put('/users/:id',auth.authenticate, auth.editUser,(req,res)=>{
         if(req.body.password){
             bcrypt.hash(req.body.password,10,(err,hash)=>{
                 if(err) throw err
@@ -93,7 +121,7 @@ const usersController = (app) =>{
             res.send("successfully updated")
     })
     
-    app.delete('/users/:id',(req,res)=>{
+    app.delete('/users/:id',auth.authenticate, auth.deleteUser, (req,res)=>{
     //  handling delete
         connection.query(`DELETE FROM users WHERE  id=${req.params.id}`, (err,resp)=>{
             if (err) throw err
@@ -107,30 +135,51 @@ const usersController = (app) =>{
 
     app.post('/users/login', (req,res)=>{
         connection.query(`select * from users where email = '${req.body.email}' `, (err,resp)=>{
-          if (err){
-            res.statusCode=401
-              res.send('Invalid username or password')
-              res.end()
-          }
-          if (resp){
-            bcrypt.compare(req.body.password,res[0].password,(errhash,succ)=>{
-              if(errhash){
-               
-              res.send('Invalid username or password')
-              
-              }else{
-                delete resp[0].password
-                res.send(resp[0])
-      
-                res.end();
-              }
-            
+          if (err || resp.length < 1){
+              res.statusCode=401
+              res.send('Invalid username or password')     
+          }else{
+                bcrypt.compare(req.body.password,resp[0].password,(errhash,success)=>{
+                    if(errhash){
+                        return res.status(500).send('Internal error')
+                    }
+                    if(success == true){
+                        connection.query(`select permissionName 
+                                    from permissions inner join role_permission 
+                                    on permissions.id = role_permission.permissionId 
+                                    inner join users_role 
+                                    on role_permission.roleId = users_role.roleId 
+                                    inner join users 
+                                    on users.id = users_role.userId where users.id = ${resp[0].id}`,
+                            (err, userPermissions) => {
+                              if (err) return res.status(401).send(err);
+                              resp[0].permissions = userPermissions.map(userPerm => userPerm.permissionName);
+                              
+                              let data = { data: resp[0] };
+
+                              let token = jwt.sign(
+                                data,
+                                process.env.ACCESS_TOKEN_SECRET,
+                                {
+                                  expiresIn: process.env.ACCESS_TOKEN_LIFE,
+                                }
+                              );
+
+                              let tokenData = {
+                                data: resp[0],
+                                accessToken: token,
+                              };
+                              res.send(tokenData);
+                            })
+                    }else{
+                        res.status(401).send('Invalid username or password')
+                    }
+
             })
           }
       
         })
       })
-    
 }
 
 module.exports = usersController
