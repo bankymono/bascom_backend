@@ -1,12 +1,5 @@
 const express = require('express')
 const router = express.Router()
-<<<<<<< HEAD
-
-// get a list of ninjas from the database
-router.get('/', (req,res)=>{
-
-})
-=======
 const usersController = require('../controllers/usersController')
 const auth = require("../controllers/authController");
 
@@ -19,4 +12,3 @@ router.put('/:id', auth.authenticate, auth.viewUser, usersController.updateUser)
 router.delete('/:id', auth.authenticate, auth.viewUser, usersController.deleteUser)
 
 module.exports = router
->>>>>>> test-branch
