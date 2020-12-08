@@ -7,7 +7,6 @@ const authenticate = (req, res, next) => {
   if (typeof authHeader === "undefined") return res.sendStatus(403); // Check if authHeader is undefined
   req.token = authHeader; // Set token
   jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, (err, data) => {
-      console.log(data)
     if (err) return res.status(403).send("Access Denied!");
     req.user = data; //decoded token data
     next();
