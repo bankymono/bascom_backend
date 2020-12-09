@@ -80,7 +80,7 @@ const userLogin = (req,res)=>{
                         (err, userPermissions) => {
                             if (err) return res.status(401).send(err);
                             resp[0].permissions = userPermissions.map(userPerm => userPerm.permissionName);
-                                  
+                            
                             let data = { data: resp[0] };
     
                             let token = jwt.sign(
@@ -176,3 +176,4 @@ module.exports = {
     updateUser,
     deleteUser
 }
+
