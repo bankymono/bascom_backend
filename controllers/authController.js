@@ -6,9 +6,9 @@ const authenticate = (req, res, next) => {
   const authHeader = req.headers["authorization"]; // Get auth header value
   if (typeof authHeader === "undefined") return res.sendStatus(403); // Check if authHeader is undefined
   req.token = authHeader; // Set token
-  jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, (err, data) => {
+  jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, (err, decodedData) => {
     if (err) return res.status(403).send("Access Denied!");
-    req.user = data; //decoded token data
+    req.user = decodedData; //decoded token data
     next();
   });
 };
@@ -117,6 +117,8 @@ const deleteTask = (req, res, next) => {
       res.status(403).send("You are not authorized to do so!");
     }
 };
+
+
 
 
 // Export modules
