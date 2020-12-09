@@ -4,7 +4,7 @@ const connection = require('../models/db')
     //     res.send('Welcome to BASCOM API')
     // })
     
-// tasks api
+// this will get the list of tasks
 const getTasks = (req,res)=>{
     connection.query("SELECT * from tasks", (err,resp)=>{
         // delete resp[0].password
@@ -12,14 +12,15 @@ const getTasks = (req,res)=>{
     })
 }
 
-    
+//this will get a single task 
 const getSingleTask = (req,res)=>{
     connection.query(`SELECT * from tasks where id = ${req.params.id}`, (err,resp)=>{
         delete resp[0].password
         res.send(resp[0])
     })
 }
-    
+ 
+//this will create a  new task
 const createTask = (req,res)=>{
     // res.send(req.body)
         connection.query(`insert into tasks (name, description) 
@@ -30,7 +31,7 @@ const createTask = (req,res)=>{
         })
 }
 
-    
+ //this will edit an existing task
 const updateTask = (req,res)=>{
     if(req.body.name){    
         connection.query(`UPDATE tasks SET 
@@ -57,7 +58,7 @@ const updateTask = (req,res)=>{
 }
     
 const deleteTask = (req,res)=>{
-//  handling delete
+
     connection.query(`DELETE FROM tasks WHERE  id=${req.params.id}`, (err,resp)=>{
         if (err) throw err
         res.send(`successfully deleted user with id ${req.params.id}`)
