@@ -50,7 +50,13 @@ const signUp = (req,res)=>{
                 '${req.body.lastName}',
                 '${req.body.email}', 
                 '${hash}',true)`, (errq,resp)=>{
-                    if (errq) return res.send("Email already exist")
+                    if (errq)
+                    {
+                        console.log(errq)
+                        res.send(errq.sqlMessage);
+                        
+                    }
+                    // return res.send("Email already exist")
                     connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 3)`,(err,resp)=>{
                         if (err) return res.status(500).send('Internal Error!')
                         res.send('Signup successful!') 
