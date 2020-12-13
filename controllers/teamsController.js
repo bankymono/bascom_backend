@@ -4,24 +4,24 @@ const connection = require('../models/db')
     //     res.send('Welcome to BASCOM API')
     // })
     
-// projects api
+// teams api
 
-const getAllProjects = (req,res)=>{
-    connection.query(`SELECT * from projects`, (err,resp)=>{
+const getAllTeams = (req,res)=>{
+    connection.query(`SELECT * from teams`, (err,resp)=>{
         if(err) throw err;
         res.send(resp)
     })
 }
 
-const getProjects = (req,res)=>{
-    connection.query(`SELECT * from projects where createdBy = ${req.user.data.id}`, (err,resp)=>{
+const getTeams = (req,res)=>{
+    connection.query(`SELECT * from teams where createdBy = ${req.user.data.id}`, (err,resp)=>{
         if(err) throw err;
         res.send(resp)
     })
 }
     
-const getSingleProject = (req,res)=>{
-    connection.query(`SELECT * from projects where id = ${req.params.projectId}`, (err,resp)=>{
+const getSingleTeam = (req,res)=>{
+    connection.query(`SELECT * from teams where id = ${req.params.projectId}`, (err,resp)=>{
         if(err) throw err
         if(resp.length < 1) res.status(404).send('does not exist!')
         else
@@ -35,8 +35,8 @@ const getSingleProject = (req,res)=>{
     })
 }
     
-const createProject = (req,res)=>{
-    connection.query(`insert into projects (name, description, teamId, createdBy, startDate, endDate, statusId) 
+const createTeam = (req,res)=>{
+    connection.query(`insert into teams (name, description, teamId, createdBy, startDate, endDate, statusId) 
         values('${req.body.name}',
                '${req.body.description}',
                 ${req.body.teamId || null},
@@ -49,15 +49,15 @@ const createProject = (req,res)=>{
         })
 }
     
-const updateProject = (req,res)=>{
+const updateTeam = (req,res)=>{
     const d = new Date().toISOString()
 
-    connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`, (err,resp)=>{
+    connection.query(`SELECT createdBy from teams where id = ${req.params.projectId}`, (err,resp)=>{
         if(err) throw err
         if(resp.length < 1) res.status(404).send('does not exist!')
         else
         if(req.user.data.id === resp[0].createdBy){
-            connection.query(`UPDATE projects SET 
+            connection.query(`UPDATE teams SET 
                 name='${req.body.name}',
                 description ='${req.body.description}',
                 teamId = ${req.body.teamId || null},
@@ -79,15 +79,15 @@ const updateProject = (req,res)=>{
 
 }
     
-const deleteProject = (req,res)=>{
+const deleteTeam = (req,res)=>{
 //  handling delete
 
-    connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`, (err,resp)=>{
+    connection.query(`SELECT createdBy from teams where id = ${req.params.projectId}`, (err,resp)=>{
         if(err) throw err
         if(resp.length < 1) res.status(404).send('does not exist!')
         else
         if(req.user.data.id === resp[0].createdBy){
-            connection.query(`DELETE FROM projects WHERE  id=${req.params.projectId}`, (err,resp)=>{
+            connection.query(`DELETE FROM teams WHERE  id=${req.params.projectId}`, (err,resp)=>{
                 if (err) throw err
                 res.send(`successfully deleted user with id ${req.params.projectId}`)
             })     
@@ -120,12 +120,12 @@ const deleteProject = (req,res)=>{
 // }
 
 module.exports = {
-    getAllProjects,
-    getProjects,
-    getSingleProject,
-    createProject,
-    updateProject,
-    deleteProject,
+    getAllTeams,
+    getTeams,
+    getSingleTeam,
+    createTeam,
+    updateTeam,
+    deleteTeam,
     // getProjectTasks,
     // createProjectTask
 }
