@@ -33,7 +33,7 @@ const internalUserSignup = (req,res)=>{
                 '${req.body.email}', 
                 '${hash}',true)`, (errq,resp)=>{
                     if (errq) return res.send("Email already exist")
-                    connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 1)`,(err,resp)=>{
+                    connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId},${req.body.roleId})`,(err,resp)=>{
                         if (err) return res.status(500).send('Internal error')
                             res.send('Successfully added internal user!') 
                     })
