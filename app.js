@@ -14,6 +14,7 @@ app.use(bodyParser.json())
 app.use('/users',require('./routes/users.route'))
 app.use('/projects',require('./routes/projects.route'))
 app.use('/tasks',require('./routes/tasks.route'))
+app.use('/teams',require('./routes/teams.route'))
 
 
 

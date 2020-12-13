@@ -12,8 +12,8 @@ const getTasks = (req,res)=>{
 
 //this will get a single task 
 const getSingleTask = (req,res)=>{
-    connection.query(`SELECT * from tasks where id = ${req.params.id}`, (err,resp)=>{
-        if(err){
+    connection.query(`SELECT * from tasks where id = ${req.params.taskid}`, (err,resp)=>{
+        if(err|| res){
             console.log(err)
             res.send(err.sqlMessage)
         }
@@ -21,6 +21,17 @@ const getSingleTask = (req,res)=>{
     })
                                                                                             
 }
+
+app.get("/subscriber_group/:id", (req, res) => {
+    connection.query(
+      `select * from subscriber_group where id = ${req.params.taskid}`,
+      (err, resp) => {
+        if (err || resp.length < 1)
+          return res.status(404).send("Record does not exist.");
+      res.send(resp[0]);
+      }
+    );
+  });
 
  
 //this will create a  new task
@@ -42,7 +53,7 @@ const updateTask = (req,res)=>{
     if(req.body.name){    
         connection.query(`UPDATE tasks SET 
             name='${req.body.name}'
-            WHERE id=${req.params.id}`, (err,resp)=>{
+            WHERE id=${req.params.taskid}`, (err,resp)=>{
             if (err) {
                 console.log(err)
             }//throw err
@@ -51,7 +62,7 @@ const updateTask = (req,res)=>{
     if(req.body.description){
         connection.query(`UPDATE tasks SET 
             description='${req.body.description}'
-            WHERE id=${req.params.id}`, (err,resp)=>{
+            WHERE id=${req.params.taskid}`, (err,resp)=>{
                 if (err) {
                     console.log(err)
                 }//throw err
@@ -66,16 +77,16 @@ const updateTask = (req,res)=>{
                 }//throw err
             })
     } 
-    res.send(`successfully updated task with id ${req.params.id}`)
+    res.send(`successfully updated task with id ${req.params.taskid}`)
 }
 
 
 //this will edit an existing task with set Id
 const deleteTask = (req,res)=>{
 
-    connection.query(`DELETE FROM tasks WHERE  id=${req.params.id}`, (err,resp)=>{
+    connection.query(`DELETE FROM tasks WHERE  id=${req.params.taskid}`, (err,resp)=>{
         if (err) return res.send(err);
-        res.send(`successfully deleted task with id ${req.params.id}`)
+        res.send(`successfully deleted task with id ${req.params.taskid}`)
     })
 
 }

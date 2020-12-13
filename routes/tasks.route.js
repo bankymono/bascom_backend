@@ -10,7 +10,7 @@ const auth = require("../controllers/authController");
 // router.delete('/:taskId', auth.authenticate, auth.deleteTask, tasksController.deleteTask)
 
 router.get('/', auth.authenticate, tasksController.getTasks)
-router.get('/:id', auth.authenticate,tasksController.getSingleTask)
+router.get('/:taskid', auth.authenticate,tasksController.getSingleTask)
 router.post('/', auth.authenticate,tasksController.createTask)
 router.put('/:id', auth.authenticate,tasksController.updateTask)
 router.delete('/:id', auth.authenticate,tasksController.deleteTask)
