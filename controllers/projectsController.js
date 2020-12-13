@@ -5,8 +5,15 @@ const connection = require('../models/db')
     // })
     
 // projects api
-const getUserProjects = (req,res)=>{
-    connection.query("SELECT * from projects", (err,resp)=>{
+
+const getAllProjects = (req,res)=>{
+    connection.query(`SELECT * from projects`, (err,resp)=>{
+        if(err) throw err;
+        res.send(resp)
+    })
+}
+const getProjects = (req,res)=>{
+    connection.query(`SELECT * from projects where createdBy = ${req.user.data.id}`, (err,resp)=>{
         if(err) throw err;
         res.send(resp)
     })
@@ -14,7 +21,13 @@ const getUserProjects = (req,res)=>{
     
 const getSingleProject = (req,res)=>{
     connection.query(`SELECT * from projects where id = ${req.params.id}`, (err,resp)=>{
-        res.send(resp[0])
+        if(resp[0].createdBy == req.user.data.id){
+            res.send(resp[0])
+        }else if(req.user.data.permissions.some(permission => permission === "view_user")){
+            res.send(resp[0])
+        }else{
+            res.status(403).send('unauthorized!')
+        }
     })
 }
     
@@ -31,7 +44,6 @@ const createProject = (req,res)=>{
                     res.send("successfully created!")
         })
 }
-
     
 const updateProject = (req,res)=>{
     if(req.body.name){    
@@ -67,32 +79,33 @@ const deleteProject = (req,res)=>{
     })
 }
 
-const createProjectTask = (req,res)=>{
-    connection.query(`insert into tasks (name, description, createdBy, startDate, endDate, projectId, statusId) 
-        values('${req.body.name}',
-               '${req.body.description}',
-               '${req.user.data.id}',
-               '${req.body.startDate}',
-               '${req.body.endDate}',
-               '${req.params.projectId}',
-               '${req.body.statusId}')`, (errq,resp)=>{
-                    if (errq) throw errq
-                    res.send("successfully created!")
-        })
-}
+// const createProjectTask = (req,res)=>{
+//     connection.query(`insert into tasks (name, description, createdBy, startDate, endDate, projectId, statusId) 
+//         values('${req.body.name}',
+//                '${req.body.description}',
+//                '${req.user.data.id}',
+//                '${req.body.startDate}',
+//                '${req.body.endDate}',
+//                '${req.params.projectId}',
+//                '${req.body.statusId}')`, (errq,resp)=>{
+//                     if (errq) throw errq
+//                     res.send("successfully created!")
+//         })
+// }
 
-const getProjectTasks = (req,res)=>{
-    connection.query(`SELECT * from tasks where projectId = ${req.params.projectId}`, (err,resp)=>{
-        res.send(resp)
-    })
-}
+// const getProjectTasks = (req,res)=>{
+//     connection.query(`SELECT * from tasks where projectId = ${req.params.projectId}`, (err,resp)=>{
+//         res.send(resp)
+//     })
+// }
 
 module.exports = {
-    getUserProjects,
+    getAllProjects,
+    getProjects,
     getSingleProject,
     createProject,
     updateProject,
     deleteProject,
-    getProjectTasks,
-    createProjectTask
+    // getProjectTasks,
+    // createProjectTask
 }
