@@ -123,19 +123,31 @@ const assignTask = (req,res)=>{
         if(resp.length < 1){
             return res.status(404).json({message:'task not found'})
         }else{
-            if(req.user.data.id == resp[0].createdBy){
-                connection.query(`insert into assigned_tasks (taskId,assigneeId, assignerId) 
-                values(${req.params.taskid},
-                    ${req.body.assigneeId},
-                    ${req.user.data.id})`,(err2,resp2)=>{
-                        if(err2) return res.status(500).json({message:'internal error'})
+            connection.query(`SELECT teams.name, team_members.userId, projects.name FROM team_members 
+            INNER JOIN teams
+            ON team_members.teamId = teams.id
+            INNER JOIN projects 
+            ON teams.id = projects.teamId where team_members.userId = ${req.body.assigneeId};
+            `, (err,resp)=>{
+                if(err) return res.status(500).json({message:'internal error'})
+                if(resp.length < 1){
+                    res.status(404).json({message:"not a member of project"})
+                } else {
+                    if(req.user.data.id == resp[0].createdBy){
+                        connection.query(`insert into assigned_tasks (taskId,assigneeId, assignerId) 
+                        values(${req.params.taskid},
+                            ${req.body.assigneeId},
+                            ${req.user.data.id})`,(err2,resp2)=>{
+                                if(err2) return res.status(500).json({message:'internal error'})
 
-                        res.status(200).json({'message':"successfully assigned"})
-                    })
-            }else{
-                res.status(422).json({'message': 'unauthorized'})
-            }
-        }        
+                                res.status(200).json({'message':"successfully assigned"})
+                        })
+                    }else{
+                        res.status(422).json({'message': 'unauthorized'})
+                    }
+                }
+            })
+        }       
     })
 }
 
