@@ -58,7 +58,6 @@ const signUp = (req,res)=>{
                 '${req.body.email}', 
                 '${hash}',
                 '${otpCode}', false)`, 
-                
                 (err,resp)=>{
                     if (err) return res.send("Email already exist!")
                     
@@ -71,7 +70,7 @@ const signUp = (req,res)=>{
                     sendEmail(
                         'Bascom Admin <bankymono@gmail.com>',
                         'User Registration Successful! Please, Activate Your Account!',
-                        `${resp[0].email}`,
+                        `${req.body.email}`,
                         `Hi ${req.body.firstName}, <br/>
                         <p>Welcome to <b>Bascom Projects</b>, thank your for registration. Click <a href="${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}"><b>here</b></a> to activate your account.
                         <p>Or Copy the link below to your browser:<br/>

@@ -34,6 +34,22 @@ const getSingleProject = (req,res)=>{
         }
     })
 }
+
+const addTeam = (req,res)=>{
+    connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`,(err, resp)=>{
+        if(req.user.data.id === resp[0].createdBy ){
+            connection.query(`UPDATE projects
+            SET teamId = req.body.teamId
+            WHERE id=${req.params.projectId}`, (err2,resp2)=>{
+                if(err) res.status(422).send('Internal error adding team')
+            })
+        }
+        else if(req.user.data.permissions.some(permission => permission === "manage_project") ){
+
+        }
+
+    })
+}
     
 const createProject = (req,res)=>{
     connection.query(`insert into projects (name, description, teamId, createdBy, startDate, endDate, statusId) 
@@ -123,6 +139,7 @@ module.exports = {
     getAllProjects,
     getProjects,
     getSingleProject,
+    addTeam,
     createProject,
     updateProject,
     deleteProject,
