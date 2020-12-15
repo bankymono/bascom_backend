@@ -36,18 +36,32 @@ const getSingleProject = (req,res)=>{
 }
 
 const addTeam = (req,res)=>{
-    connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`,(err, resp)=>{
-        if(req.user.data.id === resp[0].createdBy ){
-            connection.query(`UPDATE projects
-            SET teamId = req.body.teamId
-            WHERE id=${req.params.projectId}`, (err2,resp2)=>{
-                if(err) res.status(422).send('Internal error adding team')
-            })
+    connection.query(`SELECT id, name from teams where id = ${req.body.teamId}`,(err, resp)=>{
+        if(err) return res.status(422).send('Internal error')
+        if(resp.length < 1){
+            res.status(404).json({messag:"no such team found"})
+        }else{
+            connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`,(err2, resp2)=>{
+                if(err2) return res.status(422).send('Internal error')
+                if(req.user.data.id === resp[0].createdBy ){
+                    connection.query(`UPDATE projects
+                            SET teamId = ${req.body.teamId}
+                            WHERE id=${req.params.projectId}`, (err3,resp3)=>{
+                            if(err3) return res.status(422).send('Internal error adding team')
+                            res.json({'message':"Successfully added"})
+                    })
+                } else if(req.user.data.permissions.some(permission => permission === "manage_project") ){
+                    connection.query(`UPDATE projects
+                        SET teamId = ${req.body.teamId}
+                        WHERE id=${req.params.projectId}`, (err3,resp3)=>{
+                            if(err3) return res.status(422).send('Internal error adding team')
+                            res.json({'message':"Successfully added"})
+                        })
+                    }else{
+                    res.status(433).json({'message':"unauthorized"})
+                    }
+                })
         }
-        else if(req.user.data.permissions.some(permission => permission === "manage_project") ){
-
-        }
-
     })
 }
     
