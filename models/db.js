@@ -2,10 +2,10 @@ const mysql = require('mysql')
 require("dotenv").config();
 
 db_config = {
-    host:process.env.DATABASE_HOST || "localhost",
-    user:process.env.DATABASE_USERNAME || "root",
-    password:process.env.DATABASE_PASSWORD || "",
-    database:process.env.DATABASE || "bascom"
+    host:"us-cdbr-east-02.cleardb.com",
+    user:"be8e2032d35dc9",
+    password:"67c29f3b",
+    database:"heroku_8b1f35243343924"
 }
 
 // var connection  = mysql.createPool(db_config);
