@@ -17,7 +17,7 @@ const getUsers = (req,res)=>{
             connector.release()
             console.log('eerr')
         }else{
-            connector.query("SELECT * from users", (err,resp)=>{
+            connector.query("SELECT * from users", (err2,resp)=>{
                 // delete resp[0].password
                 resp.map( user => delete user.password )
                     res.send(resp)
