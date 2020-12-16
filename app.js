@@ -18,7 +18,7 @@ app.use('/teams',require('./routes/teams.route'))
 // app.use('/feedback',require('./routes/feedback.route'))
 
 
-app.listen(process.env.port || 5000, ()=>{
+app.listen(process.env.PORT || 5000, ()=>{
     console.log('listening at port 5000');
 })
 
