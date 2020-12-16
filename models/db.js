@@ -2,6 +2,7 @@ const mysql = require('mysql')
 require("dotenv").config();
 
 db_config = {
+    connectionLimit:50
     host:"us-cdbr-east-02.cleardb.com",
     user:"be8e2032d35dc9",
     password:"67c29f3b",
@@ -11,7 +12,7 @@ db_config = {
 // var connection  = mysql.createPool(db_config);
   
 
-var connection = mysql.createConnection(db_config)
+var connection = mysql.createPool(db_config)
 // var connection
 // function handleDisconnect() {
 //     connection = mysql.createConnection(db_config); // Recreate the connection, since
