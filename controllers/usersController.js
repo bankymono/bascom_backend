@@ -56,23 +56,8 @@ const signUp = (req,res)=>{
             values('${req.body.firstName}',
                 '${req.body.lastName}',
                 '${req.body.email}', 
-<<<<<<< HEAD
-                '${hash}',true)`, (errq,resp)=>{
-                    if (errq)
-                    {
-                        console.log(errq)
-                        res.send(errq.sqlMessage);
-                        
-                    }
-                    // return res.send("Email already exist")
-                    connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 3)`,(err,resp)=>{
-                        if (err) return res.status(500).send('Internal Error!')
-                        res.send('Signup successful!') 
-                    })
-=======
                 '${hash}',
                 '${otpCode}', false)`, 
-                
                 (err,resp)=>{
                     if (err) return res.send("Email already exist!")
                     
@@ -85,7 +70,7 @@ const signUp = (req,res)=>{
                     sendEmail(
                         'Bascom Admin <bankymono@gmail.com>',
                         'User Registration Successful! Please, Activate Your Account!',
-                        `${resp[0].email}`,
+                        `${req.body.email}`,
                         `Hi ${req.body.firstName}, <br/>
                         <p>Welcome to <b>Bascom Projects</b>, thank your for registration. Click <a href="${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}"><b>here</b></a> to activate your account.
                         <p>Or Copy the link below to your browser:<br/>
@@ -99,7 +84,6 @@ const signUp = (req,res)=>{
                 })          
                     
             })
->>>>>>> 79dbb74f0614cb49a4f18f066c2f92c0f11c70fd
         })
 }
 

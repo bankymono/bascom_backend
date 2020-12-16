@@ -1,13 +1,14 @@
 const express = require('express');
-const express = require('express');
 const router = express.Router()
-const projectsController = require('../controllers/teamsController');
+const teamsController = require('../controllers/teamsController');
 const auth = require("../controllers/authController");
 
-router.get('/', auth.authenticate, tasksController.getTasks)
-router.get('/:teamid', auth.authenticate,tasksController.getSingleTask)
-router.post('/', auth.authenticate,tasksController.createTask)
-router.put('/:teamid', auth.authenticate,tasksController.updateTask)
-router.delete('/:teamid', auth.authenticate,tasksController.deleteTask)
+router.get('/', auth.authenticate, teamsController.getAllTeams)
+router.post('/:teamId/addMember', auth.authenticate, teamsController.addMember)
+router.get('/prjteam', auth.authenticate, teamsController.getTeams)
+router.get('/:teamid', auth.authenticate,teamsController.getSingleTeam)
+router.post('/', auth.authenticate,teamsController.createTeam)
+router.put('/:teamid', auth.authenticate,teamsController.updateTeam)
+router.delete('/:teamid', auth.authenticate,teamsController.deleteTeam)
 
 module.exports = router;
