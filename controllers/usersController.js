@@ -117,7 +117,8 @@ const activateAccount = (req,res) =>{
 
 const userLogin = (req,res)=>{
     connection.query(`select * from users where email = '${req.body.email}' `, (err,resp)=>{
-        if (err || resp.length < 1){
+        if (err) res.status(500).json({message:'internal error'})
+        if (resp.length < 1){
             res.statusCode=401
             res.send('Invalid username or password')     
         }else if(resp[0].isEnabled = true){

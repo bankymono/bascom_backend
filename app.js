@@ -1,4 +1,5 @@
 const express = require('express')
+const path = require('path')
 const bodyParser = require('body-parser')
 
 
@@ -9,7 +10,7 @@ const bodyParser = require('body-parser')
 const app = express()
 
 app.use(bodyParser.json())
-
+app.use(express.static(path.join(__dirname,'public')))
 app.use('/users',require('./routes/users.route'))
 app.use('/projects',require('./routes/projects.route'))
 app.use('projects/:projectId/tasks',require('./routes/tasks.route'))
