@@ -2,13 +2,13 @@ const express = require('express')
 const router = express.Router()
 const usersController = require('../controllers/usersController')
 const auth = require("../controllers/authController");
-const { validateBody, schemas} = require('../utils/routeHelpers')
+// const { validateBody, schemas} = require('../utils/routeHelpers')
 
 router.get('/root', usersController.root);
 router.get('/', auth.authenticate, auth.viewAllUsers, usersController.getUsers);
 router.get('/:userId', auth.authenticate, usersController.getSingleUser);
 router.post('/', usersController.internalUserSignup);
-router.post('/signup', validateBody(schemas.authSchema), usersController.signUp);
+router.post('/signup', usersController.signUp);
 router.get('/auth/activation/:userId/:otpCode', usersController.activateAccount);
 router.post('/requestActivationLink', usersController.requestActivationLink);
 router.post("/resetPassword", usersController.resetPassword);
