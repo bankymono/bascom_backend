@@ -59,7 +59,7 @@ const signUp = (req,res)=>{
                 '${hash}',
                 '${otpCode}', false)`, 
                 (err,resp)=>{
-                    if (err) return res.send("Email already exist!")
+                    if (err) return res.send(err)
                     
                     connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 3)`,(err2,resp2)=>{
                         if (err2) return res.status(500).send('Internal server Error!') 
