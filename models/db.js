@@ -1,4 +1,4 @@
-// require("dotenv").config();
+require("dotenv").config();
 // const mysql = require('mysql')
 // var db_config ={
     // host:process.env.REMOTE_DB_HOS || "localhost",
