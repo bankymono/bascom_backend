@@ -12,7 +12,7 @@ const root = (req,res)=>{
 
 // Get all users
 const getUsers = (req,res)=>{
-    connection.query("SELECT * from users", (err,resp)=>{
+    connection.query("SELECT * from users order by dateCreated desc", (err,resp)=>{
         // delete resp[0].password
         resp.map( user => delete user.password )
             res.send(resp)
@@ -48,7 +48,7 @@ const internalUserSignup = (req,res)=>{
 
 // User signup
 const signUp = (req,res)=>{
-    bcrypt.hash(req.value.body.password,10,(errHash,hash)=>{
+    bcrypt.hash(req.body.password,10,(errHash,hash)=>{
         if(errHash) throw errHash
         // res.send(req.body)
         const otpCode = randomstring.generate()
@@ -59,7 +59,7 @@ const signUp = (req,res)=>{
                 '${hash}',
                 '${otpCode}', false)`, 
                 (err,resp)=>{
-                    if (err) return res.send("Email already exist!")
+                    if (err) return res.send(err)
                     
                     connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId}, 3)`,(err2,resp2)=>{
                         if (err2) return res.status(500).send('Internal server Error!') 
@@ -97,6 +97,7 @@ const activateAccount = (req,res) =>{
 
     connection.query(`SELECT email, otpCode, isEnabled FROM users WHERE id = ${userId}`, (err, resp) => {
         if (err) { return res.status(422).json({message : 'Internal Error!'}); }
+        
         if (resp.length > 0) {
             if (resp[0].isEnabled == true) {
                 return res.status(200).json({message : 'Account already activated! Proceed to login'})
@@ -115,9 +116,10 @@ const activateAccount = (req,res) =>{
     });
 }
 
+// Login controller
 const userLogin = (req,res)=>{
     connection.query(`select * from users where email = '${req.body.email}'`, (err,resp)=>{
-        if (err) res.status(500).json({message:err}) 
+        if (err) {res.status(500).json({message:'internal sample error'});console.log(err)} 
         if (resp.length < 1){
             res.statusCode=401
             res.send('Invalid username or password')     
@@ -157,122 +159,122 @@ const userLogin = (req,res)=>{
                 }else{
                     res.status(401).send('Invalid username or password')
                 }
-    
             })
         }
         else{
-            res.status(401).json({message : `Account not activated! Please, check your mail or request for another activation link here`});
+            res.status(401).json({message : `Account not activated! Please, check your mail for activation link.`});
         }          
     })
 }
 
-const requestActivationLink = (req, res, next) => {
-    connection.query(`SELECT * FROM users WHERE email = '${req.body.email}'`, (err, resp) => {
-        if (err) return res.status(422).json({message : 'internal error'}); 
-        if(resp.length < 1)
-            return res.status(422).json({message : 'iinvalid email supplied'})
-        else {
-            const otpCode = randomstring.generate()
-            connection.query(`UPDATE users SET otpCode = ${otpCode} WHERE id = ${resp[0].id}`, (err2, resp2) => {
+// const requestActivationLink = (req, res, next) => {
+//     connection.query(`SELECT * FROM users WHERE email = '${req.body.email}'`, (err, resp) => {
+//         if (err) return res.status(422).json({message : 'internal error'}); 
+//         if(resp.length < 1)
+//             return res.status(422).json({message : 'iinvalid email supplied'})
+//         else {
+//             const otpCode = randomstring.generate()
+//             connection.query(`UPDATE users SET otpCode = ${otpCode} WHERE id = ${resp[0].id}`, (err2, resp2) => {
                 
-                const encodedUserId = encodeURIComponent(Buffer.from(`${resp2.insertId}`,'binary').toString('base64')) 
-                const encodedOtpCode = encodeURIComponent(Buffer.from(`${otpCode}`,'binary').toString('base64'));
-                sendEmail(
-                    'Bascom Admin <bankymono@gmail.com>',
-                    'User Registration Successful! Please, Activate Your Account!',
-                    `${resp[0].email}`,
-                    `Hi ${req.body.firstName}, <br/>
-                    <p>Welcome to <b>Bascom Projects</b>, thank your for registration. Click <a href="${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}"><b>here</b></a> to activate your account.
-                    <p>Or Copy the link below to your browser:<br/>
-                    <a href="${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}">${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}}</a></p>
-                    <br/>`,
-                    (err3,info)=>{
-                        if (err3) return res.status(500).send(err3)
-                        res.status(201).send('Activation link requested! Please, check your mail and activate your account!')
-                    }
-                )    
-            });
-        }
-    });
-}
+//                 const encodedUserId = encodeURIComponent(Buffer.from(`${resp2.insertId}`,'binary').toString('base64')) 
+//                 const encodedOtpCode = encodeURIComponent(Buffer.from(`${otpCode}`,'binary').toString('base64'));
+//                 sendEmail(
+//                     'Bascom Admin <bankymono@gmail.com>',
+//                     'User Registration Successful! Please, Activate Your Account!',
+//                     `${resp[0].email}`,
+//                     `Hi ${req.body.firstName}, <br/>
+//                     <p>Welcome to <b>Bascom Projects</b>, thank your for registration. Click <a href="${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}"><b>here</b></a> to activate your account.
+//                     <p>Or Copy the link below to your browser:<br/>
+//                     <a href="${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}">${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}}</a></p>
+//                     <br/>`,
+//                     (err3,info)=>{
+//                         if (err3) return res.status(500).send(err3)
+//                         res.status(201).send('Activation link requested! Please, check your mail and activate your account!')
+//                     }
+//                 )    
+//             });
+//         }
+//     });
+// }
 
-const resetPassword = (req, res, next) => {
-    connection.query(`SELECT * FROM users WHERE email = '${req.body.email}'`, (err, resp) => {
-        if (err) return res.status(422).json({message : 'internal error'}); 
-        if(resp.length < 1)
-            return res.status(422).json({message : 'invalid email supplied'})
-        else {
-            const otpCode = randomstring.generate()
-            connection.query(`UPDATE users SET otpCode = ${otpCode} WHERE id = ${resp[0].id}`, (err2, resp2) => {
+// controller for password reset
+// const resetPassword = (req, res, next) => {
+//     connection.query(`SELECT * FROM users WHERE email = '${req.body.email}'`, (err, resp) => {
+//         if (err) return res.status(422).json({message : 'internal error'}); 
+//         if(resp.length < 1)
+//             return res.status(422).json({message : 'invalid email supplied'})
+//         else {
+//             const otpCode = randomstring.generate()
+//             connection.query(`UPDATE users SET otpCode = ${otpCode} WHERE id = ${resp[0].id}`, (err2, resp2) => {
                 
-                const encodedUserId = encodeURIComponent(Buffer.from(`${resp2.insertId}`,'binary').toString('base64')) 
-                const encodedOtpCode = encodeURIComponent(Buffer.from(`${otpCode}`,'binary').toString('base64'));
-                sendEmail(
-                    'Bascom Admin <bankymono@gmail.com>',
-                    'Request to reset password, Bascom projects',
-                    `${resp[0].email}`,
-                    `Hi ${req.body.firstName}, <br/>
-                    <p>A request was initiated to reset your password. Click .<a href="${process.env.BASE_URL}/users/auth/reset/${encodedUserId}/${encodedOtpCode}"><b>here</b></a>on the button below to reset your account password</p>
-                    <p>Or Copy the link below to your browser:<br/>
-                    <a href="${process.env.BASE_URL}/users/auth/reset/${encodedUserId}/${encodedOtpCode}">${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}}</a></p>
-                    <br/>
-                    Please, ignore and this mail if you did not make the request! Thanks.`,
-                    (err3,info)=>{
-                        if (err3) return res.status(500).send(err3)
-                        res.status(201).send('Activation link requested! Please, check your mail and activate your account!')
-                    }
-                )    
-            });
-        }
-    });
-}
+//                 const encodedUserId = encodeURIComponent(Buffer.from(`${resp2.insertId}`,'binary').toString('base64')) 
+//                 const encodedOtpCode = encodeURIComponent(Buffer.from(`${otpCode}`,'binary').toString('base64'));
+//                 sendEmail(
+//                     'Bascom Admin <bankymono@gmail.com>',
+//                     'Request to reset password, Bascom projects',
+//                     `${resp[0].email}`,
+//                     `Hi ${req.body.firstName}, <br/>
+//                     <p>A request was initiated to reset your password. Click .<a href="${process.env.BASE_URL}/users/auth/reset/${encodedUserId}/${encodedOtpCode}"><b>here</b></a>on the button below to reset your account password</p>
+//                     <p>Or Copy the link below to your browser:<br/>
+//                     <a href="${process.env.BASE_URL}/users/auth/reset/${encodedUserId}/${encodedOtpCode}">${process.env.BASE_URL}/users/auth/activation/${encodedUserId}/${encodedOtpCode}}</a></p>
+//                     <br/>
+//                     Please, ignore and this mail if you did not make the request! Thanks.`,
+//                     (err3,info)=>{
+//                         if (err3) return res.status(500).send(err3)
+//                         res.status(201).send('Activation link requested! Please, check your mail and activate your account!')
+//                     }
+//                 )    
+//             });
+//         }
+//     });
+// }
 
-const handleResetPassword = (req,res) =>{
+// const handleResetPassword = (req,res) =>{
     
-    const decodedUserId = decodeURIComponent(req.params.userId);
-    const decodedOtpCode = decodeURIComponent(req.params.otpCode);
+//     const decodedUserId = decodeURIComponent(req.params.userId);
+//     const decodedOtpCode = decodeURIComponent(req.params.otpCode);
 
     
-    const userId = Buffer.from(decodedUserId, 'base64').toString();
-    const otpCode = Buffer.from(decodedOtpCode, 'base64').toString();
+//     const userId = Buffer.from(decodedUserId, 'base64').toString();
+//     const otpCode = Buffer.from(decodedOtpCode, 'base64').toString();
 
-    connection.query(`SELECT email, otpCode, isEnabled FROM users WHERE id = ${userId}`, (err, resp) => {
-        if (err) { return res.status(422).json({message : 'Internal Error!'}); }
-        if (resp.length > 0) {
-            if (resp[0].otpCode == otpCode) {
-                return res.status(200).json({ userId : userId, status : "Verified" })
-            } else {
-                return res.status(401).json({message : 'Error reseting password!'})
-            }
-        } else {
-            return res.status(404).json({message : 'No user found!'})
-        }
-    });
-}
+//     connection.query(`SELECT email, otpCode, isEnabled FROM users WHERE id = ${userId}`, (err, resp) => {
+//         if (err) { return res.status(422).json({message : 'Internal Error!'}); }
+//         if (resp.length > 0) {
+//             if (resp[0].otpCode == otpCode) {
+//                 return res.status(200).json({ userId : userId, status : "Verified" })
+//             } else {
+//                 return res.status(401).json({message : 'Error reseting password!'})
+//             }
+//         } else {
+//             return res.status(404).json({message : 'No user found!'})
+//         }
+//     });
+// }
 
-const setNewPassword = (req,res) =>{
-    const userId = req.body.userId;
-    const otpCode = req.body.otpCode;
-    const newPassword = req.body.newPassword;
+// const setNewPassword = (req,res) =>{
+//     const userId = req.body.userId;
+//     const otpCode = req.body.otpCode;
+//     const newPassword = req.body.newPassword;
 
-    connection.query(`SELECT email, otpCode FROM users WHERE id = ${userId}`, (err, resp) => {
-        if (err) { return res.status(422).json({message : 'Internal Error!'}); }
-        if (resp.length > 0) {
-            if (resp[0].otpCode == otpCode) {
-                bcrypt.hash(newPassword, 10, (err, hash) => {
-                    connection.query(`UPDATE users SET otpCode = null, password=${hash} WHERE id = ${userId}`, (err2, resp2) => {
-                    if (err2) { return res.status(422).json({message : 'Internal error'}); }
-                        return res.status(201).json({message : 'Password reset successful'})
-                    });
-                })
-             }else {
-                return res.status(401).json({message : 'Error resetting password! Please check the link again'})
-            }
-        } else {
-            return res.status(404).json({message : 'No account found! Check  Link Again'})
-        }
-    });
-}
+//     connection.query(`SELECT email, otpCode FROM users WHERE id = ${userId}`, (err, resp) => {
+//         if (err) { return res.status(422).json({message : 'Internal Error!'}); }
+//         if (resp.length > 0) {
+//             if (resp[0].otpCode == otpCode) {
+//                 bcrypt.hash(newPassword, 10, (err, hash) => {
+//                     connection.query(`UPDATE users SET otpCode = null, password=${hash} WHERE id = ${userId}`, (err2, resp2) => {
+//                     if (err2) { return res.status(422).json({message : 'Internal error'}); }
+//                         return res.status(201).json({message : 'Password reset successful'})
+//                     });
+//                 })
+//              }else {
+//                 return res.status(401).json({message : 'Error resetting password! Please check the link again'})
+//             }
+//         } else {
+//             return res.status(404).json({message : 'No account found! Check  Link Again'})
+//         }
+//     });
+// }
 
 const updateUser = (req,res)=>{
     if(req.body.password){
@@ -367,11 +369,11 @@ module.exports = {
     internalUserSignup,
     signUp,
     activateAccount,
-    requestActivationLink,
+    // requestActivationLink,
     changePassword,
-    resetPassword,
-    handleResetPassword,
-    setNewPassword,
+    // resetPassword,
+    // handleResetPassword,
+    // setNewPassword,
     userLogin,
     updateUser,
     deleteUser

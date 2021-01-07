@@ -57,28 +57,28 @@ const addMember = (req,res) =>{
     })
 }
 
-// const removeMember = (req,res) =>{
-//     connection.query(`SELECT id,firstName,email from users where email = '${req.body.email}'`, (err,resp)=>{
-//         // const otpCode = randomstring.generate()
-//         if(err) return res.status(422).json({message:"Internal Error"})
-
-//         if(resp.length < 1){
-//             res.status(404).json({message:"User not found"})
-//         }
-//         else{
-//             connection.query(`DELETE FROM team_members WHERE `,(err2,resp2)=>{
-//                 if (err2) return res.status(500).send(err2)
-
-//                 res.status(200).json({message:`${resp[0].firstName} successfully added to team!!.`})
-//             })
-//         }
-
-//     })
-// }
-
-const updateTeam = (req,res)=>{
-    //vbnm,.
+const removeMember = (req,res) =>{
+    connection.query(`SELECT team_members.id,teams.createdBy from team_members 
+        inner join teams on team_members.teamId = teams.id where team_members.id = ${req.params.memberId}`, (err,resp)=>{
+        if(err) throw err
+        if(resp.length < 1) res.status(404).send('does not exist!')
+        else
+        if(req.user.data.id === resp[0].createdBy){
+            connection.query(`DELETE FROM team_members WHERE  id=${req.params.memberId}`, (err,resp)=>{
+                if (err) throw err
+                res.send(`successfully removed member with id ${req.params.memberId}`)
+            })     
+        }else if(req.user.data.permissions.some(permission => permission === "manage_project")){
+            res.send(resp[0])
+        }else{
+            res.status(403).send('forbidden')
+        }
+    })
 }
+
+// const updateTeam = (req,res)=>{
+//     //vbnm,.
+// }
 
 
 
@@ -91,8 +91,8 @@ module.exports = {
     getTeams,
     getSingleTeam,
     addMember,
-    // removeMember,
+    removeMember,
     createTeam,
-    updateTeam,
+    // updateTeam,
     deleteTeam
 }
