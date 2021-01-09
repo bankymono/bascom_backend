@@ -4,6 +4,7 @@
   "description": "backend for bascom project management tool",
   "main": "app.js",
   "scripts": {
+    "start":"node app",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -29,5 +30,8 @@
     "nodemailer": "^6.4.16",
     "nodemon": "^2.0.7",
     "randomstring": "^1.1.5"
+  },
+  "engines":{
+    "node":"12.15.0"
   }
 }

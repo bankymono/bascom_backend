@@ -52,10 +52,10 @@ require("dotenv").config();
 
 const mysql = require('mysql')
 var connection = mysql.createPool({
-  host:process.env.REMOTE_DB_HOST,
-  user:process.env.REMOTE_DB_USERNAME,
-  password:process.env.REMOTE_DB_PASSWORD, 
-  database:process.env.REMOTE_DB_DATABASE
+  host:process.env.REMOTE_DB_HOST ||"localhost",
+  user:process.env.REMOTE_DB_USERNAME || "root",
+  password:process.env.REMOTE_DB_PASSWORD || "", 
+  database:process.env.REMOTE_DB_DATABASE || "bascom"
 })
 
 // connection.connect((err,res)=>{
