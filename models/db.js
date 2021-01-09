@@ -1,18 +1,18 @@
 require("dotenv").config();
-// const mysql = require('mysql')
-// var db_config ={
-    // host:process.env.REMOTE_DB_HOS || "localhost",
-    // user:process.env.REMOTE_DB_USERNAM || "root",
-    // password:process.env.REMOTE_DB_PASSWOR || "", 
-    // database:process.env.REMOTE_DB_DATABAS || "bascom"
-// }
+const mysql = require('mysql')
+var db_config ={
+    host:process.env.JAWS_DB_HOST,
+    user:process.env.JAWS_DB_USER,
+    password:process.env.JAWS_DB_PASSWORD, 
+    database:process.env.JAWS_DB_DATABASE
+}
 
-// // var connection = mysql.createConnection({
-// //     host:process.env.REMOTE_DB_HOST,
-// //     user:process.env.REMOTE_DB_USERNAME,
-// //     password:process.env.REMOTE_DB_PASSWORD, 
-// //     database:process.env.REMOTE_DB_DATABASE
-// // })
+var connection = mysql.createConnection(db_config)
+connection.connect((err,res)=>{
+  if (err) throw err
+
+  console.log("db server connected")
+})
 
 // var connection;
 
@@ -50,13 +50,13 @@ require("dotenv").config();
 // module.exports = connection
 
 
-const mysql = require('mysql')
-var connection = mysql.createPool({
-  host:process.env.REMOTE_DB_HOST ||"localhost",
-  user:process.env.REMOTE_DB_USERNAME || "root",
-  password:process.env.REMOTE_DB_PASSWORD || "", 
-  database:process.env.REMOTE_DB_DATABASE || "bascom"
-})
+// const mysql = require('mysql')
+// var connection = mysql.createPool({
+//   host:process.env.REMOTE_DB_HOST ||"localhost",
+//   user:process.env.REMOTE_DB_USERNAME || "root",
+//   password:process.env.REMOTE_DB_PASSWORD || "", 
+//   database:process.env.REMOTE_DB_DATABASE || "bascom"
+// })
 
 // connection.connect((err,res)=>{
 //     if (err) throw err
