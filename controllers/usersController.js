@@ -10,12 +10,33 @@ const root = (req,res)=>{
     res.send('Welcome to BASCOM API')
 }
 
+// Internal User registration controller
+const internalUserSignup = (req,res)=>{
+    bcrypt.hash(req.body.password,10,(err,hash)=>{
+        if(err) throw err
+
+        // res.send(req.body)
+        connection.query(`insert into users (firstName,lastName, email, password, isEnabled) 
+            values('${req.body.firstName}',
+                '${req.body.lastName}',
+                '${req.body.email}', 
+                '${hash}',true)`, (errq,resp)=>{
+                    if (errq) return res.status(422).json({error:"Email already exist"})
+                    connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId},2)`,(err,resp)=>{
+                        if (err) return res.status(500).send('Internal error')
+                            res.json({message:'Successfully added internal user!'}) 
+                    })
+        })
+    })
+}
+
+
 // Get all users
 const getUsers = (req,res)=>{
     connection.query("SELECT * from users order by dateCreated desc", (err,resp)=>{
         // delete resp[0].password
         resp.map( user => delete user.password )
-            res.send(resp)
+            res.json({"users":resp})
     })
 }
 
@@ -27,24 +48,7 @@ const getSingleUser = (req,res)=>{
     })
 }
 
-// Internal User registration controller
-const internalUserSignup = (req,res)=>{
-    bcrypt.hash(req.body.password,10,(err,hash)=>{
-        if(err) throw err
-        // res.send(req.body)
-        connection.query(`insert into users (firstName,lastName, email, password, isEnabled) 
-            values('${req.body.firstName}',
-                '${req.body.lastName}',
-                '${req.body.email}', 
-                '${hash}',true)`, (errq,resp)=>{
-                    if (errq) return res.send("Email already exist")
-                    connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId},${req.body.roleId})`,(err,resp)=>{
-                        if (err) return res.status(500).send('Internal error')
-                            res.send('Successfully added internal user!') 
-                    })
-        })
-    })
-}
+
 
 // User signup
 const signUp = (req,res)=>{

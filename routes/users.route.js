@@ -3,12 +3,13 @@ const router = express.Router()
 const usersController = require('../controllers/usersController')
 const auth = require("../controllers/authController");
 const {userValidationResult, userValidator} = require('../validators/userValidator') 
+
 // const { validateBody, schemas} = require('../utils/routeHelpers')
 
 router.get('/root', usersController.root);
-router.get('/', auth.authenticate, auth.viewAllUsers, usersController.getUsers);
+router.get('/all', auth.authenticate, auth.viewAllUsers, usersController.getUsers);
 router.get('/:userId', auth.authenticate, usersController.getSingleUser);
-router.post('/', usersController.internalUserSignup);
+router.post('/',  userValidator, userValidationResult,usersController.internalUserSignup);
 
 // user sign up and activation
 router.post('/signup', userValidator, userValidationResult, usersController.signUp);
