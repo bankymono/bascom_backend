@@ -30,7 +30,6 @@ const internalUserSignup = (req,res)=>{
     })
 }
 
-
 // Get all users
 const getUsers = (req,res)=>{
     connection.query("SELECT * from users order by dateCreated desc", (err,resp)=>{
@@ -82,7 +81,7 @@ const signUp = (req,res)=>{
                         <br/>`,
                         (err3,info)=>{
                             if (err3) return res.status(500).send(err3)
-                            res.status(201).send('Signup Sucessful! Please, check your mail and activate your account!')
+                            res.status(201).json({message:'Signup Sucessful! Please, check your mail and activate your account!'})
                         }
                     )        
                 })          
