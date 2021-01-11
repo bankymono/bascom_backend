@@ -7,7 +7,7 @@ const authenticate = (req, res, next) => {
   if (typeof authHeader === "undefined") return res.sendStatus(403); // Check if authHeader is undefined
   req.token = authHeader; // Set token
   jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, (err, decodedData) => {
-    if (err) return res.status(403).send("Access Denied!");
+    if (err) return res.status(403).json({success:false,message:"Access Denied!"});
     req.user = decodedData; //decoded token data
     next();
   });
@@ -23,7 +23,7 @@ const can = (action, data) => {
     if (can("add_user", req.user.data.permissions) === true) {
       next();
     } else {
-      res.status(403).send("You don't have permission to view all users");
+      res.status(403).send("You don't have permission to add a user");
     }
   };
 

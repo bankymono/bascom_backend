@@ -179,7 +179,7 @@ const login = (req,res,next)=>{
                             };
 
                             // send user details
-                            return res.status(200).json({user:tokenData});
+                            return res.status(200).json({success:true,user:tokenData});
                         })
                 }else{ // if password is not verified
                     return res.status(404).json({success:false,message:"Invalid credentials!"}) 
@@ -192,9 +192,70 @@ const login = (req,res,next)=>{
     })
 }
 
+// forgot password logic
 const forgotPassword = (req,res,next) =>{
-    res.send('forgot password link')
-}
+    const {email} = req.body;
+
+    connection.query(`select * from users where email = '${email}'`, (err1,resp1)=>{
+        //check if query returns erroe
+        if (err1) return res.status(500).json({message:'internal server error'});
+
+        // if email is not found
+        if (resp1.length < 1){
+            return res.status(404).json({success:false,message:"Email could not be sent"}) 
+        }
+
+        //generate a password reset token
+        const resetToken = randomstring.generate();
+        const resetPasswordExpire = Date.now() + 10 *( 60* 1000);
+
+        // store reset token into database
+        connection.query(`update users set resetPasswordToken = '${resetToken}', 
+                        resetPasswordExpire='${resetPasswordExpire}' where email='${email}'`,(err2,resp2)=>{
+                    if (err2) return res.status(500).json({"success":false,"message":err2});
+
+                    //encode the reset token
+                    const encodedResetToken = encodeURIComponent(Buffer.from(`${resetToken}`,'binary').toString('base64'));
+                    
+                    // create a frontend url for user to click to reset password
+                    const resetUrl = `${process.env.BASE_URL}/passwordreset/${encodedResetToken}`;
+
+                    // generate a message to show to user in mail
+                    const message = `
+                            Hello ${resp1[0].firstName},
+                            <p>You have requested a password reset</p>
+                            <p>Please go to this link to reset your password</p>
+                            <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+                            <p>Kindly ignore this mail if you did not initiate this request.</p>
+                    `;
+
+                    sendEmail(
+                        'Bascom Project <bankymono@gmail.com>',
+                        'Password Reset Request',
+                        `${email}`,
+                        `${message}`,
+
+                        // response after sending mail
+                        (err3,info)=>{
+                            //after sending mail, if theres an error
+                            if (err3) {
+
+                                // set the resetpasswordtoken and resettoken expire column to null
+                                connection.query(`update users set resetPasswordToken = null, 
+                                    resetPasswordExpire=null where email='${email}'`,(err4,resp)=>{
+                                    if (err4) return res.status(500).json({"success":false,"message":'internal server error'})
+                                })
+                                // then inform the user of internal server error
+                                return res.status(500).json({"message":err3})
+                            }
+
+                            res.status(200).json({success:true, message:'Email sent'})
+                        }
+                    )// ## mail sending logic for forgotpassword ends here
+        });
+
+    });
+} // forgot password logic ends here
 
 const resetPassword = (req,res,next) =>{
     res.send('reset password link')
