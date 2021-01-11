@@ -17,7 +17,7 @@ router.get('/auth/activation/:userId/:otpCode', usersController.activateAccount)
 
 
 //login route
-router.post('auth/login', usersController.login);
+router.post('/auth/login', usersController.login);
 
 // forgot password
 router.post("/auth/forgotpassword", usersController.forgotPassword);

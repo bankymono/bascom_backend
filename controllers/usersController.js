@@ -112,19 +112,38 @@ const signUp = (req,res,next)=>{
 }
 //################ SIGNUP CONTROLLER ENDS HERE ######################################################
 
+
 // Login controller
 const login = (req,res,next)=>{
+    // get email and password from request
+    const {email,password} = req.body;
+
+    if(!email || !password){
+        return res.status(400).json({success:false,message:"Please provide email and password!"});
+    }
+
+    // check if user exists in the database
     connection.query(`select * from users where email = '${req.body.email}'`, (err,resp)=>{
-        if (err) {res.status(500).json({message:'internal sample error'});console.log(err)} 
+
+        if (err) return res.status(500).json({message:'internal server error'});
+
+        // if email is not found
         if (resp.length < 1){
-            res.statusCode=401
-            res.send('Invalid username or password')     
-        }else if(resp[0].isEnabled = true){
+            
+            return res.status(404).json({success:false,message:"Invalid credentials!"}) 
+
+        }
+        if(resp[0].isEnabled == true){  // if email is found and account is activated
+            
+            // verify if password is correct
             bcrypt.compare(req.body.password,resp[0].password,(errhash,success)=>{
-                if(errhash){
-                    return res.status(500).send('Internal error')
-                }
+
+                if(errhash) return res.status(500).json({message:'internal server error'});
+
+                // if email is successfully confirmed
                 if(success == true){
+                    
+                    // fetch user permissions from database
                     connection.query(`select permissionName 
                         from permissions inner join role_permission 
                         on permissions.id = role_permission.permissionId 
@@ -133,11 +152,18 @@ const login = (req,res,next)=>{
                         inner join users 
                         on users.id = users_role.userId where users.id = ${resp[0].id}`,
                         (err, userPermissions) => {
-                            if (err) return res.status(401).send(err);
+                            // if there is error fetching data
+                            if (err) return res.status(500).json({message:'internal server error'});
+
+                            // delete user password details
+                            delete resp[0].password
+
+                            // add user permissions to user data object
                             resp[0].permissions = userPermissions.map(userPerm => userPerm.permissionName);
                             
                             let data = { data: resp[0] };
     
+                            // generate token for frontend authentication
                             let token = jwt.sign(
                                 data,
                                 process.env.ACCESS_TOKEN_SECRET,
@@ -146,18 +172,21 @@ const login = (req,res,next)=>{
                                 }
                             );
     
+                            // set user data and token for authentication as one object
                             let tokenData = {
                                 data: resp[0],
                                 accessToken: token,
                             };
-                            res.send(tokenData);
+
+                            // send user details
+                            return res.status(200).json({user:tokenData});
                         })
-                }else{
-                    res.status(401).send('Invalid username or password')
+                }else{ // if password is not verified
+                    return res.status(404).json({success:false,message:"Invalid credentials!"}) 
                 }
             })
         }
-        else{
+        else{ // if email is not activated
             res.status(401).json({message : `Account not activated! Please, check your mail for activation link.`});
         }          
     })
