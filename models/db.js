@@ -12,7 +12,7 @@ var connection = mysql.createConnection(db_config)
 connection.connect((err,res)=>{
   if (err) throw err
 
-  console.log("db server connected")
+  console.log("Database connected and running!!!")
 })
 
 // var connection;
