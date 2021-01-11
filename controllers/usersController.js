@@ -195,7 +195,7 @@ const login = (req,res,next)=>{
 // forgot password logic
 const forgotPassword = (req,res,next) =>{
     const {email} = req.body;
-
+    
     connection.query(`select * from users where email = '${email}'`, (err1,resp1)=>{
         //check if query returns erroe
         if (err1) return res.status(500).json({message:'internal server error'});
@@ -208,7 +208,7 @@ const forgotPassword = (req,res,next) =>{
         //generate a password reset token
         const resetToken = randomstring.generate();
         const resetPasswordExpire = Date.now() + 10 *( 60* 1000);
-
+        console.log(resetPasswordExpire)
         // store reset token into database
         connection.query(`update users set resetPasswordToken = '${resetToken}', 
                         resetPasswordExpire='${resetPasswordExpire}' where email='${email}'`,(err2,resp2)=>{
@@ -257,8 +257,35 @@ const forgotPassword = (req,res,next) =>{
     });
 } // forgot password logic ends here
 
+// reset password route get the token from the user reset password
 const resetPassword = (req,res,next) =>{
-    res.send('reset password link')
+   
+    const decodedToken = decodeURIComponent(req.params.resetToken);
+    const resetPasswordToken =  Buffer.from(decodedToken, 'base64').toString();
+   
+    connection.query(`select * from users where resetPasswordToken = '${resetPasswordToken}'`,
+     (err1,resp1)=>{
+        if (err1) return res.status(500).json({message:'internal server error'});
+
+        // if email is not found
+        if (resp1.length < 1){
+            return res.status(400).json({success:false,message:"Invalid reset token"}) 
+        }
+        bcrypt.hash(req.body.password,10, (errHash,hash)=>{
+            if(errHash) return res.status(500).json({message:'internal server error'});
+
+            connection.query(`update users set password = '${hash}', resetPasswordToken=null
+                 where id=${resp1[0].id}`,(err2,resp2)=>{
+                
+                    if (err2) return res.status(500).json({"success":false,"message":"internal server error"});
+
+                    res.status(201).json({success:true, message:'Password reset successful!'})
+            })
+        
+        })
+
+    });
+
 }
 
 const activateAccount = (req,res) =>{    
