@@ -37,11 +37,15 @@ exports.userValidator = [
         .isEmail()
         .withMessage('please provide a valid email'),
 
-        check('password')
+    check('password')
         .trim()
         .not()
         .isEmpty()
         .withMessage('Password is required!')
-        .isLength({min:7})
+        .matches(/\d/)
+        .withMessage('Password must contain at least one number!')
+        .matches(/\W/)
+        .withMessage('Password must contain at least one character!')
+        .isLength({min:8})
         .withMessage('Password must be at least 8 characters long!')
 ]
