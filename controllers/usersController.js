@@ -198,7 +198,7 @@ const forgotPassword = (req,res,next) =>{
 
     connection.query(`select * from users where email = '${email}'`, (err1,resp1)=>{
         //check if query returns erroe
-        if (err1) return res.status(500).json({message:err1});
+        if (err1) return res.status(500).json({message:'internal server error'});
 
         // if email is not found
         if (resp1.length < 1){
@@ -246,7 +246,7 @@ const forgotPassword = (req,res,next) =>{
                                     if (err4) return res.status(500).json({"success":false,"message":'internal server error'})
                                 })
                                 // then inform the user of internal server error
-                                return res.status(500).json({"message":err3})
+                                return res.status(500).json({"message":"internal server error"})
                             }
 
                             res.status(200).json({success:true, message:'Email sent'})
