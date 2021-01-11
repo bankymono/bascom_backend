@@ -212,7 +212,7 @@ const forgotPassword = (req,res,next) =>{
         // store reset token into database
         connection.query(`update users set resetPasswordToken = '${resetToken}', 
                         resetPasswordExpire='${resetPasswordExpire}' where email='${email}'`,(err2,resp2)=>{
-                    if (err2) return res.status(500).json({"success":false,"message":err2});
+                    if (err2) return res.status(500).json({"success":false,"message":"internal server error"});
 
                     //encode the reset token
                     const encodedResetToken = encodeURIComponent(Buffer.from(`${resetToken}`,'binary').toString('base64'));
@@ -246,7 +246,7 @@ const forgotPassword = (req,res,next) =>{
                                     if (err4) return res.status(500).json({"success":false,"message":'internal server error'})
                                 })
                                 // then inform the user of internal server error
-                                return res.status(500).json({"message":err3})
+                                return res.status(500).json({"message":"internal server error"})
                             }
 
                             res.status(200).json({success:true, message:'Email sent'})
