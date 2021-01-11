@@ -94,7 +94,7 @@ const signUp = (req,res,next)=>{
 
                                 // response after sending mail
                                 (err3,info)=>{
-                                    if (err3) return res.status(500).json({"message":'internal server error'});
+                                    if (err3){console.log(err3); return res.status(500).json({"message":'internal server error'});}
                                     res.status(201).json({message:'Signup Sucessful! Please, check your mail and activate your account!'})
                                 }
                             )// ## mail sending logic ends here        
