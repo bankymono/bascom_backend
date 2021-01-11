@@ -1,13 +1,22 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config()
 
-const transport = nodemailer.createTransport({
-    service:'gmail',
-    auth:{
-        user:process.env.USER,
-        pass:process.env.PASSWORD
-    }
-})
+// const transport = nodemailer.createTransport({
+//     service:'gmail',
+//     auth:{
+//         user:process.env.USER,
+//         pass:process.env.PASSWORD
+//     }
+// })
+let transport = nodemailer.createTransport({
+    host: process.env.MAILGUN_SMTP_SERVER,
+    port: process.env.MAILGUN_SMTP_PORT,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: process.env.MAILGUN_SMTP_LOGIN, 
+      pass: process.env.MAILGUN_SMTP_PASSWORD, 
+    },
+  });
 
 
 const sendEmail = (from, subject, to, html,cb) => {
