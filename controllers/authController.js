@@ -32,7 +32,7 @@ const viewAllUsers = (req, res, next) => {
   if (can("view_all_users", req.user.data.permissions) === true) {
     next();
   } else {
-    res.status(403).send("You don't have permission to view all users");
+    res.status(403).json({message:"Forbidden!"});
   }
 };
 
@@ -50,7 +50,7 @@ const deleteUser = (req, res, next) => {
     if (can("delete_user", req.user.data.permissions) === true) {
       next();
     } else {
-      res.status(403).send("You don't have permission to delete a user");
+      res.status(403).json({message:"Forbidden!"});
     }
 };
 
@@ -66,7 +66,7 @@ const viewAllProjects = (req, res, next) => {
     if (can("view_all_projects", req.user.data.permissions) === true) {
       next();
     } else {
-      res.status(403).send("You are not authorized to do so!");
+      res.status(403).json({message:"Forbidden!"});
     }
 };
 
@@ -98,7 +98,7 @@ const viewAllTasks = (req, res, next) => {
     if (can("view_all_tasks", req.user.data.permissions) === true) {
       next();
     } else {
-      res.status(403).send("You are not authorized to do so!");
+      res.status(403).json({message:"Forbidden!"});
     }
 };
 

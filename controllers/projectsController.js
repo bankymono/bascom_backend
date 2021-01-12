@@ -76,7 +76,8 @@ const addTeam = (req,res)=>{
         }
     })
 }
-    
+
+// create projejct endpoint
 const createProject = (req,res)=>{
     connection.query(`insert into projects (name, description, teamId, createdBy, startDate, endDate, statusId) 
         values('${req.body.name}',
@@ -85,9 +86,10 @@ const createProject = (req,res)=>{
                 ${req.user.data.id},
                 ${req.body.startDate || null},
                 ${req.body.endDate || null},
-                ${req.body.statusId ||null})`, (errq,resp)=>{
-                    if (errq) throw errq
-                    res.send("successfully created!")
+                ${req.body.statusId ||null})`, (err,resp)=>{
+                    if (err) return res.status(400).json({success:false,message:'name or description cannot be empty'});
+                    
+                    res.status(200).json({success:true,message:"successfully created!"})
         })
 }
     
