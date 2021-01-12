@@ -6,32 +6,44 @@ const connection = require('../models/db')
     
 // projects api
 
+// fetches all projects - accessible only by an administrator
 const getAllProjects = (req,res)=>{
     connection.query(`SELECT * from projects`, (err,resp)=>{
-        if(err) throw err;
-        res.send(resp)
+        if(err) return res.status(500).json({'message':'internal server error'});
+        
+        res.status(200).json({data:resp})
     })
 }
 
+// fetch projects of a logged in user
 const getProjects = (req,res)=>{
+    // fetch from db
     connection.query(`SELECT * from projects where createdBy = ${req.user.data.id}`, (err,resp)=>{
-        if(err) throw err;
-        res.send(resp)
+        if(err) return res.status(500).json({'message':'internal server error'});
+        
+        if(resp.length < 1) res.status(404).json({message:"No project found."})
+        res.status(200).json({data:resp})
     })
-}
-    
+} // fetch user project ends here!
+
+
+// get project by id
 const getSingleProject = (req,res)=>{
     connection.query(`SELECT * from projects where id = ${req.params.projectId}`, (err,resp)=>{
-        if(err) throw err
-        if(resp.length < 1) res.status(404).send('does not exist!')
-        else
-        if(resp[0].createdBy == req.user.data.id){
-            res.send(resp[0])
-        }else if(req.user.data.permissions.some(permission => permission === "view_all_projects")){
-            res.send(resp[0])
-        }else{
-            res.status(403).send('unauthorized!')
-        }
+        if(err) return res.status(500).json({message:'internal server error'});
+
+        // if no data returned, send status not found
+        if(resp.length < 1) return res.status(404).json({message:'Not found!'});
+
+        // is the logged in user owner of the project?
+        if(resp[0].createdBy == req.user.data.id) return res.status(200).json({data:resp[0]})
+        
+        // does the logged in user have permission to view the project?
+        if(req.user.data.permissions.some(permission => permission === "view_all_projects")) 
+            return res.status(200).json({data:resp[0]})
+        
+            // user not authorized to view project
+        res.status(403).json({message:'Unauthorized'});
     })
 }
 
@@ -64,7 +76,8 @@ const addTeam = (req,res)=>{
         }
     })
 }
-    
+
+// create projejct endpoint
 const createProject = (req,res)=>{
     connection.query(`insert into projects (name, description, teamId, createdBy, startDate, endDate, statusId) 
         values('${req.body.name}',
@@ -73,9 +86,10 @@ const createProject = (req,res)=>{
                 ${req.user.data.id},
                 ${req.body.startDate || null},
                 ${req.body.endDate || null},
-                ${req.body.statusId ||null})`, (errq,resp)=>{
-                    if (errq) throw errq
-                    res.send("successfully created!")
+                ${req.body.statusId ||null})`, (err,resp)=>{
+                    if (err) return res.status(400).json({success:false,message:'name or description cannot be empty'});
+                    
+                    res.status(200).json({success:true,message:"successfully created!"})
         })
 }
     

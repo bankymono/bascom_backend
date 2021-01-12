@@ -7,7 +7,7 @@ const authenticate = (req, res, next) => {
   if (typeof authHeader === "undefined") return res.sendStatus(403); // Check if authHeader is undefined
   req.token = authHeader; // Set token
   jwt.verify(req.token, process.env.ACCESS_TOKEN_SECRET, (err, decodedData) => {
-    if (err) return res.status(403).send("Access Denied!");
+    if (err) return res.status(403).json({success:false,message:"Access Denied!"});
     req.user = decodedData; //decoded token data
     next();
   });
@@ -23,7 +23,7 @@ const can = (action, data) => {
     if (can("add_user", req.user.data.permissions) === true) {
       next();
     } else {
-      res.status(403).send("You don't have permission to view all users");
+      res.status(403).send("You don't have permission to add a user");
     }
   };
 
@@ -32,7 +32,7 @@ const viewAllUsers = (req, res, next) => {
   if (can("view_all_users", req.user.data.permissions) === true) {
     next();
   } else {
-    res.status(403).send("You don't have permission to view all users");
+    res.status(403).json({message:"Forbidden!"});
   }
 };
 
@@ -50,7 +50,7 @@ const deleteUser = (req, res, next) => {
     if (can("delete_user", req.user.data.permissions) === true) {
       next();
     } else {
-      res.status(403).send("You don't have permission to delete a user");
+      res.status(403).json({message:"Forbidden!"});
     }
 };
 
@@ -66,7 +66,7 @@ const viewAllProjects = (req, res, next) => {
     if (can("view_all_projects", req.user.data.permissions) === true) {
       next();
     } else {
-      res.status(403).send("You are not authorized to do so!");
+      res.status(403).json({message:"Forbidden!"});
     }
 };
 
@@ -98,7 +98,7 @@ const viewAllTasks = (req, res, next) => {
     if (can("view_all_tasks", req.user.data.permissions) === true) {
       next();
     } else {
-      res.status(403).send("You are not authorized to do so!");
+      res.status(403).json({message:"Forbidden!"});
     }
 };
 
