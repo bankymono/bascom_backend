@@ -54,13 +54,13 @@ const deleteUser = (req, res, next) => {
     }
 };
 
-// const createProject = (req, res, next) => {
-//     if (can("create_project", req.user.data.permissions) === true) {
-//       next();
-//     } else {
-//       res.status(403).send("You are not authorized to do so!");
-//     }
-// };
+const manageProject = (req, res, next) => {
+    if (can("manage_project", req.user.data.permissions) === true) {
+      next();
+    } else {
+      res.status(403).json({message:"Forbidden!"});
+    }
+};
 
 const viewAllProjects = (req, res, next) => {
     if (can("view_all_projects", req.user.data.permissions) === true) {
@@ -127,7 +127,7 @@ module.exports.addUser = addUser;
 module.exports.viewAllUsers = viewAllUsers;
 module.exports.editUser = editUser;
 module.exports.deleteUser = deleteUser;
-// module.exports.createProject = createProject;
+module.exports.manageProject = manageProject;
 // module.exports.editProject = editProject;
 module.exports.viewAllProjects = viewAllProjects;
 // module.exports.deleteProject = deleteProject;

@@ -63,7 +63,7 @@ const addTeam = (req,res)=>{
 
                         res.status(200).json({success:true,message:"Team successfully added"})
                 })
-            } else if(req.user.data.permissions.some(permission => permission === "manage_project") ){
+            } else if(req.user.data.permissions.some(permission => permission == "manage_project") ){
                 connection.query(`UPDATE projects
                     SET teamId = ${req.body.teamId}
                     WHERE id=${req.params.projectId}`, (err3,resp3)=>{
@@ -119,7 +119,7 @@ const editProject = (req,res)=>{
                     
                     res.status(200).json({success:true,message:"successfully updated!"})
             }) 
-        }else if(req.user.data.permissions.some(permission => permission === "manage_project")){
+        }else if(req.user.data.permissions.some(permission => permission == "manage_project")){
             connection.query(`UPDATE projects SET 
             name='${req.body.name}',
             description ='${req.body.description}',
@@ -148,13 +148,13 @@ const deleteProject = (req,res)=>{
 
         if(resp.length < 1) return res.status(404).json({message:'Not found!'});
     
-        if(req.user.data.id === resp[0].createdBy){
+        if(req.user.data.id == resp[0].createdBy){
             connection.query(`DELETE FROM projects WHERE  id=${req.params.projectId}`, (err,resp)=>{
                 if(err) return res.status(500).json({message:'internal server error'});
 
                 res.status(200).json({success:true,message:"successfully deleted"});
             })     
-        }else if(req.user.data.permissions.some(permission => permission === "manage_project")){
+        }else if(req.user.data.permissions.some(permission => permission == "manage_project")){
             connection.query(`DELETE FROM projects WHERE  id=${req.params.projectId}`, (err,resp)=>{
                 if(err) return res.status(500).json({message:'internal server error'});
 
