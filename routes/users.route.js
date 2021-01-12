@@ -21,7 +21,7 @@ router.post('/auth/login', usersController.login);
 
 // forgot password
 router.post("/auth/forgotpassword", usersController.forgotPassword);
-router.put("/auth/resetPassword/:resetToken",  usersController.resetPassword);
+router.post("/auth/resetpassword/:resetToken",  usersController.resetPassword);
 
 
 router.put('/:id', auth.authenticate, usersController.updateUser);
