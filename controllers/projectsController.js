@@ -156,7 +156,7 @@ module.exports = {
     addTeam,
     createProject,
     updateProject,
-    deleteProject,
+    deleteProject
     // getProjectTasks,
     // createProjectTask
 }

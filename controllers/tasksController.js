@@ -109,7 +109,7 @@ const updateTask = (req,res)=>{
 }
 
 
-//this will edit an existing task with set Id
+//this will delete an existing task with set Id
 const deleteTask = (req,res)=>{
     connection.query(`DELETE FROM tasks WHERE  id=${req.params.taskid}`, (err,resp)=>{
         if (err) return res.send(err);
