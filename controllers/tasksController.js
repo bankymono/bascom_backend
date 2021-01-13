@@ -78,11 +78,11 @@ const createTask = (req,res)=>{
         connection.query(`insert into tasks (name, description,createdBy,projectId,startDate,endDate,statusId) 
                 values('${req.body.name}',
                     '${req.body.description || null}',
-                    '${req.user.data.id}',
-                    '${req.params.projectId}',
-                    '${req.body.startDate || null}',
-                    '${req.body.endDate || null}',
-                    '${req.body.statusId || null}')`, (errq,resp)=>{
+                    ${req.user.data.id},
+                    ${req.params.projectId},
+                    ${req.body.startDate || null},
+                    ${req.body.endDate || null},
+                    ${req.body.statusId || null})`, (errq,resp)=>{
                         if (errq) return res.status(500).json({message:"Internal server error"})
                         
                         res.status(200).json({success:true,message:"successfully created!"})
@@ -91,10 +91,10 @@ const createTask = (req,res)=>{
         connection.query(`insert into tasks (name, description,createdBy,startDate,endDate,statusId) 
                 values('${req.body.name}',
                     '${req.body.description || null}',
-                    '${req.user.data.id}',
-                    '${req.body.startDate || null}',
-                    '${req.body.endDate || null}',
-                     ${req.body.statusId || null})`, (errq,resp)=>{
+                    ${req.user.data.id},
+                    ${req.body.startDate || null},
+                    ${req.body.endDate || null},
+                    ${req.body.statusId || null})`, (errq,resp)=>{
                         if (errq) return res.status(500).json({message:"Internal server error"})
                       
                         res.status(200).json({success:true,message:"successfully created!"})
