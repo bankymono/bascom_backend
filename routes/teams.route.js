@@ -4,12 +4,13 @@ const teamsController = require('../controllers/teamsController');
 const auth = require("../controllers/authController");
 
 router.get('/', auth.authenticate, teamsController.getAllTeams)
-router.post('/:teamId/addMember', auth.authenticate, teamsController.addMember)
-router.post('/:teamId/addMember/:memberId', auth.authenticate, teamsController.removeMember)
-router.get('/prjteam', auth.authenticate, teamsController.getTeams)
+router.post('/:teamId/addmember', auth.authenticate, teamsController.addMember)
+router.post('/:teamId/invite', auth.authenticate, teamsController.inviteMember)
+router.post('/:teamId/:memberId/remove', auth.authenticate, teamsController.removeMember)
+router.get('/userteams', auth.authenticate, teamsController.getTeams)
 router.get('/:teamid', auth.authenticate,teamsController.getSingleTeam)
-router.post('/', auth.authenticate,teamsController.createTeam)
-// router.put('/:teamid', auth.authenticate,teamsController.updateTeam)
-router.delete('/:teamid', auth.authenticate,teamsController.deleteTeam)
+router.post('/create', auth.authenticate,teamsController.createTeam)
+router.post('/:teamid/edit', auth.authenticate,teamsController.editTeam)
+router.delete('/:teamid/delete', auth.authenticate,teamsController.deleteTeam)
 
 module.exports = router;

@@ -70,6 +70,14 @@ const viewAllProjects = (req, res, next) => {
     }
 };
 
+const viewAllTeams = (req, res, next) => {
+  if (can("view_all_teams", req.user.data.permissions) === true) {
+    next();
+  } else {
+    res.status(403).json({message:"Forbidden!"});
+  }
+};
+
 // const editProject = (req, res, next) => {
 //     if (can("edit_project", req.user.data.permissions) === true) {
 //       next();
@@ -130,6 +138,7 @@ module.exports.deleteUser = deleteUser;
 module.exports.manageProject = manageProject;
 // module.exports.editProject = editProject;
 module.exports.viewAllProjects = viewAllProjects;
+module.exports.viewAllTeams = viewAllTeams;
 // module.exports.deleteProject = deleteProject;
 // module.exports.createTask = createTask;
 // module.exports.editTask = editTask;

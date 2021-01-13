@@ -36,7 +36,7 @@ const getSingleProject = (req,res)=>{
         if(resp[0].createdBy == req.user.data.id) return res.status(200).json({data:resp[0]})
         
         // does the logged in user have permission to view the project?
-        if(req.user.data.permissions.some(permission => permission === "view_all_projects")) 
+        if(req.user.data.permissions.some(permission => permission == "view_all_projects")) 
             return res.status(200).json({data:resp[0]})
         
             // user not authorized to view project
