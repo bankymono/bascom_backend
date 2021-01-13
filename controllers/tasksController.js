@@ -123,7 +123,7 @@ const editTask = (req,res)=>{
                 lastModified = ${d},
                 modifiedBy = ${req.user.data.id}
                 WHERE id=${req.params.taskId}`, (err,resp)=>{
-                    if(err) return res.status(500).json({message:'internal server error'});
+                    if(err) return res.status(500).json({message:err});
                     
                     res.status(200).json({success:true,message:"successfully updated!"})
             })
