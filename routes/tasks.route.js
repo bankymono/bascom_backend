@@ -11,7 +11,7 @@ router.get('/:taskId', auth.authenticate,tasksController.getSingleTask)
 router.post('/create', nameValidator, 
     nameValidationResult, auth.authenticate,tasksController.createTask)
 router.post('/:taskId/assign', auth.authenticate,tasksController.assignTask)
-router.post('/:id/edit', auth.authenticate,tasksController.editTask)
-router.post('/:id/delete', auth.authenticate,tasksController.deleteTask)
+router.post('/:taskId/edit', auth.authenticate,tasksController.editTask)
+router.post('/:taskId/delete', auth.authenticate,tasksController.deleteTask)
 
 module.exports = router;

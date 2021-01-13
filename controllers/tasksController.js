@@ -175,7 +175,7 @@ const deleteTask = (req,res)=>{
 }
 
 const assignTask = (req,res)=>{
-    connection.query(`select * FROM tasks WHERE  id=${req.params.taskid}`, (err,resp)=>{
+    connection.query(`select * FROM tasks WHERE  id=${req.params.taskId}`, (err,resp)=>{
         if(err) return res.status(500).json({message:'internal server error'});
 
         if(resp.length < 1) return res.status(404).json({message:'task not found'})
