@@ -130,7 +130,7 @@ const editTask = (req,res)=>{
         }else if(req.user.data.permissions.some(permission => permission == "manage_tasks")){
             connection.query(`UPDATE projects SET 
             name='${req.body.name}',
-            description ='${req.body.description || resp[0].description}',
+            description ='${req.body.description}',
             teamId = ${req.body.teamId || null},
             startDate = ${req.body.startDate || null},
             endDate = ${req.body.endDate || null},
