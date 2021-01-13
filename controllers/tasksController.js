@@ -120,7 +120,7 @@ const editTask = (req,res)=>{
                 startDate = ${req.body.startDate || null},
                 endDate = ${req.body.endDate || null},
                 statusId = ${req.body.statusId ||null},
-                lastModified = '${d}',
+                dateModified = '${d}',
                 modifiedBy = ${req.user.data.id}
                 WHERE id=${req.params.taskId}`, (err,resp)=>{
                     if(err) return res.status(500).json({message:err});
