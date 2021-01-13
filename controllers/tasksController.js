@@ -109,7 +109,7 @@ const editTask = (req,res)=>{
 
     connection.query(`SELECT createdBy from tasks where id = ${req.params.taskId}`, (err,resp)=>{
         // if error 
-        if(err) return res.status(500).json({message:err});
+        if(err) return res.status(500).json({message:"internal server error"});
 
         if(resp.length < 1) return res.status(404).json({message:'Not found!'});
 
@@ -123,7 +123,7 @@ const editTask = (req,res)=>{
                 dateModified = '${d}',
                 modifiedBy = ${req.user.data.id}
                 WHERE id=${req.params.taskId}`, (err,resp)=>{
-                    if(err) return res.status(500).json({message:err});
+                    if(err) return res.status(500).json({message:"internal server error"});
                     
                     res.status(200).json({success:true,message:"successfully updated!"})
             })
@@ -138,7 +138,7 @@ const editTask = (req,res)=>{
             lastModified = '${d}',
             modifiedBy = ${req.user.data.id}
             WHERE id=${req.params.taskId}`, (err,resp)=>{
-                if(err) return res.status(500).json({message:err});
+                if(err) return res.status(500).json({message:"internal server error"});
                 
                 res.status(200).json({success:true,message:"successfully updated!"})
             })
