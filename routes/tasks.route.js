@@ -6,7 +6,7 @@ const {nameValidationResult, nameValidator} = require('../validators/nameValidat
 
 
 router.get('/all', auth.authenticate, auth.viewAllTasks, tasksController.getAllTasks)
-router.get('/tasks', auth.authenticate, tasksController.getTasks)
+router.get('/usertasks', auth.authenticate, tasksController.getTasks)
 router.get('/:taskId', auth.authenticate,tasksController.getSingleTask)
 router.post('/create', nameValidator, 
     nameValidationResult, auth.authenticate,tasksController.createTask)

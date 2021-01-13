@@ -42,18 +42,33 @@ const getTasks = (req,res)=>{
 
 //this will get a single task 
 const getSingleTask = (req,res)=>{
-    connection.query(`SELECT * from tasks where projectId = ${req.params.projectId} and id = ${req.params.taskId}`, (err,resp)=>{
-        if(err) return res.status(500).json({message:"Internal server error"})
-        
-        if(resp.length < 1)return res.status(404).json({message:"task not found"})
-        
-        if( req.user.data.id == resp[0].createdBy ||
-            req.user.data.permissions.some(permission => permission === "view_all_projects")){
-            res.status(200).json({data:resp[0]})
-        }else{
-            res.status(403).json({message:'Unauthorized'});
-        }
-    })                                                                                            
+    if(req.params.projectId){
+        connection.query(`SELECT * from tasks where projectId = ${req.params.projectId} and id = ${req.params.taskId}`, (err,resp)=>{
+            if(err) return res.status(500).json({message:"Internal server error"})
+            
+            if(resp.length < 1)return res.status(404).json({message:"task not found"})
+            
+            if( req.user.data.id == resp[0].createdBy ||
+                req.user.data.permissions.some(permission => permission === "view_all_projects")){
+                res.status(200).json({data:resp[0]})
+            }else{
+                res.status(403).json({message:'Unauthorized'});
+            }
+        })           
+    }else{
+        connection.query(`SELECT * from tasks where id = ${req.params.taskId}`, (err,resp)=>{
+            if(err) return res.status(500).json({message:"Internal server error"})
+            
+            if(resp.length < 1)return res.status(404).json({message:"task not found"})
+            
+            if( req.user.data.id == resp[0].createdBy ||
+                req.user.data.permissions.some(permission => permission === "view_all_projects")){
+                res.status(200).json({data:resp[0]})
+            }else{
+                res.status(403).json({message:'Unauthorized'});
+            }
+        })
+    }
 }
 
  
