@@ -27,7 +27,7 @@ router.post('/userprojects/:projectId/delete', auth.authenticate, projectsContro
 router.post('/:projectId/tasks/create', nameValidator, 
     nameValidationResult, auth.authenticate,tasksController.createTask)
 router.post('/:projectId/tasks/:taskId/assign', auth.authenticate,tasksController.assignTask)
-router.post('/:projectId/tasks/:id/edit', auth.authenticate,tasksController.editTask)
-router.post('/:projectId/tasks/:id/delete', auth.authenticate,tasksController.deleteTask)
+router.post('/:projectId/tasks/:taskId/edit', auth.authenticate,tasksController.editTask)
+router.post('/:projectId/tasks/:taskId/delete', auth.authenticate,tasksController.deleteTask)
 
 module.exports = router
