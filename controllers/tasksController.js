@@ -11,18 +11,33 @@ const getAllTasks = (req,res)=>{
 }
 
 const getTasks = (req,res)=>{
-    connection.query(`SELECT * from tasks where projectId = ${req.params.projectId} order by id desc`, (err,resp)=>{
-        if(err) return res.status(500).json({message:"Internal server error"})
-        
-        if(resp.length < 1) return res.status(404).json({message:"No task found."})
-        
-        if( req.user.data.id == resp[0].createdBy ||
-            req.user.data.permissions.some(permission => permission == "view_all_tasks")){
-            res.status(200).json({data:resp})
-        }else{
-            res.status(403).json({message:'Unauthorized'});
-        }
-    })
+    if(req.params.projectId){
+        connection.query(`SELECT * from tasks where projectId = ${req.params.projectId} order by id desc`, (err,resp)=>{
+            if(err) return res.status(500).json({message:"Internal server error"})
+            
+            if(resp.length < 1) return res.status(404).json({message:"No task found."})
+            
+            if( req.user.data.id == resp[0].createdBy ||
+                req.user.data.permissions.some(permission => permission == "view_all_tasks")){
+                res.status(200).json({data:resp})
+            }else{
+                res.status(403).json({message:'Unauthorized'});
+            }
+        })
+    }else{
+        connection.query(`SELECT * from tasks where createdBy = ${req.user.data.id} order by id desc`, (err,resp)=>{
+            if(err) return res.status(500).json({message:"Internal server error"})
+            
+            if(resp.length < 1) return res.status(404).json({message:"No task found."})
+            
+            if( req.user.data.id == resp[0].createdBy ||
+                req.user.data.permissions.some(permission => permission == "view_all_tasks")){
+                res.status(200).json({data:resp})
+            }else{
+                res.status(403).json({message:'Unauthorized'});
+            }
+        })
+    }
 }
 
 //this will get a single task 
