@@ -9,7 +9,7 @@ const {nameValidationResult, nameValidator} = require('../validators/nameValidat
 router.get('/all', auth.authenticate,auth.viewAllProjects,projectsController.getAllProjects)
 
 router.get('/userprojects/', auth.authenticate, projectsController.getProjects)
-router.get('/:projectId/tasks/usertasks', auth.authenticate, tasksController.getTasks)
+router.get('/:projectId/tasks/', auth.authenticate, tasksController.getTasks)
 
 router.get('/userprojects/:projectId', auth.authenticate, projectsController.getSingleProject)
 router.get('/:projectId/tasks/:taskId', auth.authenticate,tasksController.getSingleTask)
