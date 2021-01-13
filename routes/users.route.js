@@ -2,8 +2,7 @@ const express = require('express')
 const router = express.Router()
 const usersController = require('../controllers/usersController')
 const auth = require("../controllers/authController");
-const {userValidationResult, userValidator} = require('../validators/userValidator') 
-
+const {userValidationResult, userValidator} = require('../validators/userValidator');
 
 router.get('/root', usersController.root);
 router.get('/all', auth.authenticate, auth.viewAllUsers, usersController.getUsers);

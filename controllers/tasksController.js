@@ -1,7 +1,7 @@
 const connection = require('../models/db')
     
 
-// this will get the list of tasks
+// this will get all the list of tasks
 const getAllTasks = (req,res)=>{
     connection.query("SELECT * from tasks order by id desc", (err,resp)=>{
         if(err) return res.status(500).json({message:"Internal server error"})
@@ -11,35 +11,64 @@ const getAllTasks = (req,res)=>{
 }
 
 const getTasks = (req,res)=>{
-    connection.query(`SELECT * from tasks where projectId = ${req.params.projectId} order by id desc`, (err,resp)=>{
-        if(err) return res.status(500).json({message:"Internal server error"})
-        
-        if(resp.length < 1){
-            res.status(404).json({message:"task not found"})
-        }else if( req.user.data.id == resp[0].createdBy ||
-            req.user.data.permissions.some(permission => permission === "view_all_projects")){
-            res.send(resp)
-        }else{
-            res.status(433).json({message:"Access denied"})
-        }
-    })
+    if(req.params.projectId){
+        connection.query(`SELECT * from tasks where projectId = ${req.params.projectId} order by id desc`, (err,resp)=>{
+            if(err) return res.status(500).json({message:"Internal server error"})
+            
+            if(resp.length < 1) return res.status(404).json({message:"No task found."})
+            
+            if( req.user.data.id == resp[0].createdBy ||
+                req.user.data.permissions.some(permission => permission == "view_all_tasks")){
+                res.status(200).json({data:resp})
+            }else{
+                res.status(403).json({message:'Unauthorized'});
+            }
+        })
+    }else{
+        connection.query(`SELECT * from tasks where createdBy = ${req.user.data.id} order by id desc`, (err,resp)=>{
+            if(err) return res.status(500).json({message:"Internal server error"})
+            
+            if(resp.length < 1) return res.status(404).json({message:"No task found."})
+            
+            if( req.user.data.id == resp[0].createdBy ||
+                req.user.data.permissions.some(permission => permission == "view_all_tasks")){
+                res.status(200).json({data:resp})
+            }else{
+                res.status(403).json({message:'Unauthorized'});
+            }
+        })
+    }
 }
 
 //this will get a single task 
 const getSingleTask = (req,res)=>{
-    connection.query(`SELECT * from tasks where projectId = ${req.params.projectId} and id = ${req.params.taskid} `, (err,resp)=>{
-        if(err) return res.status(500).json({message:"Internal server error"})
-        
-        if(resp.length < 1){
-            res.status(404).json({message:"task not found"})
-        }else if( req.user.data.id == resp[0].createdBy ||
-            req.user.data.permissions.some(permission => permission === "view_all_projects")){
-            res.send(resp[0])
-        }else{
-            res.status(433).json({message:"Access denied"})
-        }
-    })
-                                                                                            
+    if(req.params.projectId){
+        connection.query(`SELECT * from tasks where projectId = ${req.params.projectId} and id = ${req.params.taskId}`, (err,resp)=>{
+            if(err) return res.status(500).json({message:"Internal server error"})
+            
+            if(resp.length < 1)return res.status(404).json({message:"task not found"})
+            
+            if( req.user.data.id == resp[0].createdBy ||
+                req.user.data.permissions.some(permission => permission === "view_all_projects")){
+                res.status(200).json({data:resp[0]})
+            }else{
+                res.status(403).json({message:'Unauthorized'});
+            }
+        })           
+    }else{
+        connection.query(`SELECT * from tasks where id = ${req.params.taskId}`, (err,resp)=>{
+            if(err) return res.status(500).json({message:"Internal server error"})
+            
+            if(resp.length < 1)return res.status(404).json({message:"task not found"})
+            
+            if( req.user.data.id == resp[0].createdBy ||
+                req.user.data.permissions.some(permission => permission === "view_all_projects")){
+                res.status(200).json({data:resp[0]})
+            }else{
+                res.status(403).json({message:'Unauthorized'});
+            }
+        })
+    }
 }
 
  
@@ -49,105 +78,137 @@ const createTask = (req,res)=>{
         connection.query(`insert into tasks (name, description,createdBy,projectId,startDate,endDate,statusId) 
                 values('${req.body.name}',
                     '${req.body.description || null}',
-                    '${req.user.data.id}',
-                    '${req.params.projectId}',
-                    '${req.body.startDate || null}',
-                    '${req.body.endDate || null}',
-                    '${req.body.statusId || null}')`, (errq,resp)=>{
+                    ${req.user.data.id},
+                    ${req.params.projectId},
+                    ${req.body.startDate || null},
+                    ${req.body.endDate || null},
+                    ${req.body.statusId || null})`, (errq,resp)=>{
                         if (errq) return res.status(500).json({message:"Internal server error"})
-                        if (resp){
-                            res.send(" Task successfully created!")
-                        }
+                        
+                        res.status(200).json({success:true,message:"successfully created!"})
         })
     }else{
         connection.query(`insert into tasks (name, description,createdBy,startDate,endDate,statusId) 
                 values('${req.body.name}',
                     '${req.body.description || null}',
-                    '${req.user.data.id}',
-                    '${req.body.startDate || null}',
-                    '${req.body.endDate || null}',
-                     ${req.body.statusId || null})`, (errq,resp)=>{
+                    ${req.user.data.id},
+                    ${req.body.startDate || null},
+                    ${req.body.endDate || null},
+                    ${req.body.statusId || null})`, (errq,resp)=>{
                         if (errq) return res.status(500).json({message:"Internal server error"})
-                        if (resp){
-                            res.send(" Task successfully created!")
-                        }
+                      
+                        res.status(200).json({success:true,message:"successfully created!"})
         })
     }
 }
 
 
  //this will edit an existing task with set Id
-const updateTask = (req,res)=>{
-    if(req.body.name){    
-        connection.query(`UPDATE tasks SET 
-            name='${req.body.name}'
-            WHERE id=${req.params.taskid}`, (err,resp)=>{
-            if (err) {
-                console.log(err)
-            }//throw err
-        }) 
-    }
-    if(req.body.description){
-        connection.query(`UPDATE tasks SET 
-            description='${req.body.description}'
-            WHERE id=${req.params.taskid}`, (err,resp)=>{
-                if (err) {
-                    console.log(err)
-                }//throw err
+const editTask = (req,res)=>{
+    const d = new Date().toISOString()
+
+    connection.query(`SELECT createdBy from tasks where id = ${req.params.taskId}`, (err,resp)=>{
+        // if error 
+        if(err) return res.status(500).json({message:"internal server error"});
+
+        if(resp.length < 1) return res.status(404).json({message:'Not found!'});
+
+        if(req.user.data.id == resp[0].createdBy){
+            connection.query(`UPDATE tasks SET 
+                name='${req.body.name}',
+                description ='${req.body.description || resp[0].description}',
+                startDate = ${req.body.startDate || null},
+                endDate = ${req.body.endDate || null},
+                statusId = ${req.body.statusId ||null},
+                dateModified = '${d}',
+                modifiedBy = ${req.user.data.id}
+                WHERE id=${req.params.taskId}`, (err,resp)=>{
+                    if(err) return res.status(500).json({message:"internal server error"});
+                    
+                    res.status(200).json({success:true,message:"successfully updated!"})
             })
-    }
-    if(req.body.teamId){
-        connection.query(`UPDATE tasks SET 
-            otherName='${req.body.teamId}'
-            WHERE id=${req.params.id}`, (err,resp)=>{
-                if (err) {
-                    console.log(err)
-                }//throw err
+        }else if(req.user.data.permissions.some(permission => permission == "manage_tasks")){
+            connection.query(`UPDATE projects SET 
+            name='${req.body.name}',
+            description ='${req.body.description}',
+            teamId = ${req.body.teamId || null},
+            startDate = ${req.body.startDate || null},
+            endDate = ${req.body.endDate || null},
+            statusId = ${req.body.statusId ||null},
+            lastModified = '${d}',
+            modifiedBy = ${req.user.data.id}
+            WHERE id=${req.params.taskId}`, (err,resp)=>{
+                if(err) return res.status(500).json({message:"internal server error"});
+                
+                res.status(200).json({success:true,message:"successfully updated!"})
             })
-    } 
-    res.send(`successfully updated task with id ${req.params.taskid}`)
+        }else{
+            res.status(400).json({success:false,message:"forbidden"})
+        }
+    })
 }
 
+<<<<<<< HEAD
 
 //this will delete an existing task with set Id
+=======
+//this will edit an existing task with set Id
+>>>>>>> dd6fd3c0f0497e05f410933e17a47469a67d30a6
 const deleteTask = (req,res)=>{
-    connection.query(`DELETE FROM tasks WHERE  id=${req.params.taskid}`, (err,resp)=>{
-        if (err) return res.send(err);
-        res.send(`successfully deleted task with id ${req.params.taskid}`)
+    
+    connection.query(`SELECT createdBy from tasks where id = ${req.params.taskId}`, (err,resp)=>{
+        if(err) return res.status(500).json({message:'internal server error'});
+
+        if(resp.length < 1) return res.status(404).json({message:'Task Not found!'});
+    
+        if(req.user.data.id == resp[0].createdBy){
+            connection.query(`DELETE FROM tasks WHERE  id=${req.params.taskId}`, (err,resp)=>{
+                if(err) return res.status(500).json({message:'internal server error'});
+
+                res.status(200).json({success:true,message:"successfully deleted"});
+            })     
+        }else if(req.user.data.permissions.some(permission => permission == "manage_tasks")){
+            connection.query(`DELETE FROM tasks WHERE  id=${req.params.taskId}`, (err,resp)=>{
+                if(err) return res.status(500).json({message:'internal server error'});
+
+                res.status(200).json({success:true,message:"successfully deleted"})
+            })
+        }else{
+            res.status(400).json({success:false,message:"forbidden"});
+        }
     })
 }
 
 const assignTask = (req,res)=>{
-    connection.query(`select * FROM tasks WHERE  id=${req.params.taskid}`, (err,resp)=>{
-        if (err) return res.send(err);
-        if(resp.length < 1){
-            return res.status(404).json({message:'task not found'})
-        }else{
+    connection.query(`select * FROM tasks WHERE  id=${req.params.taskId}`, (err,resp)=>{
+        if(err) return res.status(500).json({message:'internal server error'});
+
+        if(resp.length < 1) return res.status(404).json({message:'task not found'})
+
             connection.query(`SELECT teams.name, team_members.userId, projects.name FROM team_members 
             INNER JOIN teams
             ON team_members.teamId = teams.id
             INNER JOIN projects 
             ON teams.id = projects.teamId where team_members.userId = ${req.body.assigneeId};
             `, (err,resp)=>{
-                if(err) return res.status(500).json({message:'internal error'})
-                if(resp.length < 1){
-                    res.status(404).json({message:"not a member of project"})
-                } else {
-                    if(req.user.data.id == resp[0].createdBy){
-                        connection.query(`insert into assigned_tasks (taskId,assigneeId, assignerId) 
-                        values(${req.params.taskid},
-                            ${req.body.assigneeId},
-                            ${req.user.data.id})`,(err2,resp2)=>{
-                                if(err2) return res.status(500).json({message:'internal error'})
+                if(err) return res.status(500).json({message:'internal error'});
+        
+                if(resp.length < 1) return res.status(404).json({message:"not a member of project"})
+                
+                if(req.user.data.id == resp[0].createdBy){
+                    connection.query(`insert into assigned_tasks (taskId,assigneeId, assignerId) 
+                    values(${req.params.taskid},
+                        ${req.body.assigneeId},
+                        ${req.user.data.id})`,(err2,resp2)=>{
+                            if(err2) return res.status(500).json({message:'internal error'})
 
-                                res.status(200).json({'message':"successfully assigned"})
-                        })
-                    }else{
-                        res.status(422).json({'message': 'unauthorized'})
-                    }
+                            res.status(200).json({'message':"successfully assigned"})
+                    })
+                }else{
+                    res.status(422).json({'message': 'unauthorized'})
                 }
+                
             })
-        }       
     })
 }
 
@@ -156,7 +217,7 @@ module.exports = {
     getTasks,
     getSingleTask,
     createTask,
-    updateTask,
+    editTask,
     deleteTask,
     assignTask
 }

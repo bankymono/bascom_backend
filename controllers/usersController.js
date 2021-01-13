@@ -208,7 +208,6 @@ const forgotPassword = (req,res,next) =>{
         //generate a password reset token
         const resetToken = randomstring.generate();
         const resetPasswordExpire = Date.now() + 10 *( 60* 1000);
-        console.log(resetPasswordExpire)
         // store reset token into database
         connection.query(`update users set resetPasswordToken = '${resetToken}', 
                         resetPasswordExpire='${resetPasswordExpire}' where email='${email}'`,(err2,resp2)=>{

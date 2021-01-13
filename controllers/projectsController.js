@@ -1,8 +1,5 @@
 const connection = require('../models/db')
 
-    // app.get('/',(req,res)=>{
-    //     res.send('Welcome to BASCOM API')
-    // })
     
 // projects api
 
@@ -21,7 +18,7 @@ const getProjects = (req,res)=>{
     connection.query(`SELECT * from projects where createdBy = ${req.user.data.id}`, (err,resp)=>{
         if(err) return res.status(500).json({'message':'internal server error'});
         
-        if(resp.length < 1) res.status(404).json({message:"No project found."})
+        if(resp.length < 1) return res.status(404).json({message:"No project found."})
         res.status(200).json({data:resp})
     })
 } // fetch user project ends here!
@@ -39,7 +36,7 @@ const getSingleProject = (req,res)=>{
         if(resp[0].createdBy == req.user.data.id) return res.status(200).json({data:resp[0]})
         
         // does the logged in user have permission to view the project?
-        if(req.user.data.permissions.some(permission => permission === "view_all_projects")) 
+        if(req.user.data.permissions.some(permission => permission == "view_all_projects")) 
             return res.status(200).json({data:resp[0]})
         
             // user not authorized to view project
@@ -49,31 +46,35 @@ const getSingleProject = (req,res)=>{
 
 const addTeam = (req,res)=>{
     connection.query(`SELECT id, name from teams where id = ${req.body.teamId}`,(err, resp)=>{
-        if(err) return res.status(422).send('Internal error')
-        if(resp.length < 1){
-            res.status(404).json({messag:"no such team found"})
-        }else{
-            connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`,(err2, resp2)=>{
-                if(err2) return res.status(422).send('Internal error')
-                if(req.user.data.id === resp[0].createdBy ){
-                    connection.query(`UPDATE projects
-                            SET teamId = ${req.body.teamId}
-                            WHERE id=${req.params.projectId}`, (err3,resp3)=>{
-                            if(err3) return res.status(422).send('Internal error adding team')
-                            res.json({'message':"Successfully added"})
-                    })
-                } else if(req.user.data.permissions.some(permission => permission === "manage_project") ){
-                    connection.query(`UPDATE projects
+        if(err) return res.status(500).json({'message':'internal server error'});
+        
+        if(resp.length < 1) return res.status(404).json({message:'Team not found!'});
+        
+        connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`,(err2, resp2)=>{
+            if(err2) return res.status(500).json({'message':'internal server error'});
+
+            if(resp2.length < 1) return res.status(404).json({message:'Project Not found!'});
+
+            if(req.user.data.id == resp[0].createdBy ){
+                connection.query(`UPDATE projects
                         SET teamId = ${req.body.teamId}
                         WHERE id=${req.params.projectId}`, (err3,resp3)=>{
-                            if(err3) return res.status(422).send('Internal error adding team')
-                            res.json({'message':"Successfully added"})
-                        })
-                    }else{
-                    res.status(433).json({'message':"unauthorized"})
-                    }
+                        if(err3) return res.status(500).json({'message':'internal server error'});
+
+                        res.status(200).json({success:true,message:"Team successfully added"})
                 })
-        }
+            } else if(req.user.data.permissions.some(permission => permission == "manage_project") ){
+                connection.query(`UPDATE projects
+                    SET teamId = ${req.body.teamId}
+                    WHERE id=${req.params.projectId}`, (err3,resp3)=>{
+                        if(err3) return res.status(500).json({'message':'internal server error'});
+
+                        res.status(200).json({success:true,message:"Team successfully added"})
+                    })
+                }else{
+                    res.status(400).json({success:false,message:"forbidden"})
+                }
+            })
     })
 }
 
@@ -92,15 +93,18 @@ const createProject = (req,res)=>{
                     res.status(200).json({success:true,message:"successfully created!"})
         })
 }
-    
-const updateProject = (req,res)=>{
+     
+// edit project controller
+const editProject = (req,res)=>{
     const d = new Date().toISOString()
 
     connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`, (err,resp)=>{
-        if(err) throw err
-        if(resp.length < 1) res.status(404).send('does not exist!')
-        else
-        if(req.user.data.id === resp[0].createdBy){
+        // if error 
+        if(err) return res.status(500).json({message:'internal server error'});
+
+        if(resp.length < 1) return res.status(404).json({message:'Not found!'});
+
+        if(req.user.data.id == resp[0].createdBy){
             connection.query(`UPDATE projects SET 
                 name='${req.body.name}',
                 description ='${req.body.description}',
@@ -111,57 +115,57 @@ const updateProject = (req,res)=>{
                 lastModified = '${d}',
                 modifiedBy = ${req.user.data.id}
                 WHERE id=${req.params.projectId}`, (err,resp)=>{
-                    if (err) throw err
-                    res.send(resp)
+                    if(err) return res.status(500).json({message:'internal server error'});
+                    
+                    res.status(200).json({success:true,message:"successfully updated!"})
             }) 
-        }else if(req.user.data.permissions.some(permission => permission === "manage_project")){
-            res.send(resp[0])
+        }else if(req.user.data.permissions.some(permission => permission == "manage_project")){
+            connection.query(`UPDATE projects SET 
+            name='${req.body.name}',
+            description ='${req.body.description}',
+            teamId = ${req.body.teamId || null},
+            startDate = ${req.body.startDate || null},
+            endDate = ${req.body.endDate || null},
+            statusId = ${req.body.statusId ||null},
+            lastModified = '${d}',
+            modifiedBy = ${req.user.data.id}
+            WHERE id=${req.params.projectId}`, (err,resp)=>{
+                if(err) return res.status(500).json({message:'internal server error'});
+                
+                res.status(200).json({success:true,message:"successfully updated!"})
+            })
         }else{
-            res.status(403).send('forbidden')
+            res.status(400).json({success:false,message:"forbidden"})
         }
     })
-
 }
     
 const deleteProject = (req,res)=>{
 //  handling delete
 
     connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`, (err,resp)=>{
-        if(err) throw err
-        if(resp.length < 1) res.status(404).send('does not exist!')
-        else
-        if(req.user.data.id === resp[0].createdBy){
+        if(err) return res.status(500).json({message:'internal server error'});
+
+        if(resp.length < 1) return res.status(404).json({message:'Not found!'});
+    
+        if(req.user.data.id == resp[0].createdBy){
             connection.query(`DELETE FROM projects WHERE  id=${req.params.projectId}`, (err,resp)=>{
-                if (err) throw err
-                res.send(`successfully deleted user with id ${req.params.projectId}`)
+                if(err) return res.status(500).json({message:'internal server error'});
+
+                res.status(200).json({success:true,message:"successfully deleted"});
             })     
-        }else if(req.user.data.permissions.some(permission => permission === "manage_project")){
-            res.send(resp[0])
+        }else if(req.user.data.permissions.some(permission => permission == "manage_project")){
+            connection.query(`DELETE FROM projects WHERE  id=${req.params.projectId}`, (err,resp)=>{
+                if(err) return res.status(500).json({message:'internal server error'});
+
+                res.status(200).json({success:true,message:"successfully deleted"})
+            })
         }else{
-            res.status(403).send('forbidden')
+            res.status(400).json({success:false,message:"forbidden"});
         }
     })
 }
 
-// const createProjectTask = (req,res)=>{
-//     connection.query(`insert into tasks (name, description, createdBy, startDate, endDate, projectId, statusId) 
-//         values('${req.body.name}',
-//                '${req.body.description}',
-//                '${req.user.data.id}',
-//                '${req.body.startDate}',
-//                '${req.body.endDate}',
-//                '${req.params.projectId}',
-//                '${req.body.statusId}')`, (errq,resp)=>{
-//                     if (errq) throw errq
-//                     res.send("successfully created!")
-//         })
-// }
-
-// const getProjectTasks = (req,res)=>{
-//     connection.query(`SELECT * from tasks where projectId = ${req.params.projectId}`, (err,resp)=>{
-//         res.send(resp)
-//     })
-// }
 
 module.exports = {
     getAllProjects,
@@ -169,8 +173,13 @@ module.exports = {
     getSingleProject,
     addTeam,
     createProject,
+<<<<<<< HEAD
     updateProject,
     deleteProject
     // getProjectTasks,
     // createProjectTask
+=======
+    editProject,
+    deleteProject
+>>>>>>> dd6fd3c0f0497e05f410933e17a47469a67d30a6
 }

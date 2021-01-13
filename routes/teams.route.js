@@ -2,14 +2,17 @@ const express = require('express');
 const router = express.Router()
 const teamsController = require('../controllers/teamsController');
 const auth = require("../controllers/authController");
+const {nameValidationResult, nameValidator} = require('../validators/nameValidator');
 
-router.get('/', auth.authenticate, teamsController.getAllTeams)
-router.post('/:teamId/addMember', auth.authenticate, teamsController.addMember)
-router.post('/:teamId/addMember/:memberId', auth.authenticate, teamsController.removeMember)
-router.get('/prjteam', auth.authenticate, teamsController.getTeams)
-router.get('/:teamid', auth.authenticate,teamsController.getSingleTeam)
-router.post('/', auth.authenticate,teamsController.createTeam)
-// router.put('/:teamid', auth.authenticate,teamsController.updateTeam)
-router.delete('/:teamid', auth.authenticate,teamsController.deleteTeam)
+router.get('/all', auth.authenticate, teamsController.getAllTeams)
+router.post('/:teamId/addmember', auth.authenticate, teamsController.addMember)
+router.post('/:teamId/invite', auth.authenticate, teamsController.inviteMember)
+router.post('/:teamId/:memberId/remove', auth.authenticate, teamsController.removeMember)
+router.get('/userteams', auth.authenticate, teamsController.getTeams)
+router.get('/:teamId', auth.authenticate,teamsController.getSingleTeam)
+router.post('/create', nameValidator, 
+    nameValidationResult, auth.authenticate,teamsController.createTeam)
+router.post('/:teamId/edit', auth.authenticate,teamsController.editTeam)
+router.post('/:teamId/delete', auth.authenticate,teamsController.deleteTeam)
 
 module.exports = router;
