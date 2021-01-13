@@ -4,7 +4,7 @@ const projectsController = require('../controllers/projectsController')
 const auth = require("../controllers/authController");
 
 
-router.get('/all', auth.authenticate,auth.viewAllProjects,projectsController.getAllProjects)
+router.get('/projects', auth.authenticate,auth.viewAllProjects,projectsController.getAllProjects)
 
 router.get('/userprojects', auth.authenticate, projectsController.getProjects)
 router.get('/userprojects/:projectId', auth.authenticate, projectsController.getSingleProject)

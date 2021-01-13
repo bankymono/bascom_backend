@@ -11,6 +11,7 @@ const app = express()
 
 app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname,'public')))
+
 app.use('/users',require('./routes/users.route'))
 app.use('/projects',require('./routes/projects.route'))
 app.use('projects/:projectId/tasks',require('./routes/tasks.route'))
