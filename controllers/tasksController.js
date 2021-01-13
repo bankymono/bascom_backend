@@ -116,21 +116,21 @@ const editTask = (req,res)=>{
         if(req.user.data.id == resp[0].createdBy){
             connection.query(`UPDATE tasks SET 
                 name='${req.body.name}',
-                description ='${req.body.description}',
+                description ='${req.body.description || resp[0].description}',
                 startDate = ${req.body.startDate || null},
                 endDate = ${req.body.endDate || null},
                 statusId = ${req.body.statusId ||null},
                 lastModified = ${d},
                 modifiedBy = ${req.user.data.id}
                 WHERE id=${req.params.taskId}`, (err,resp)=>{
-                    if(err) return res.status(500).json({message:err});
+                    if(err) return res.status(500).json({message:'internal server error'});
                     
                     res.status(200).json({success:true,message:"successfully updated!"})
             })
         }else if(req.user.data.permissions.some(permission => permission == "manage_tasks")){
             connection.query(`UPDATE projects SET 
             name='${req.body.name}',
-            description ='${req.body.description}',
+            description ='${req.body.description || resp[0].description}',
             teamId = ${req.body.teamId || null},
             startDate = ${req.body.startDate || null},
             endDate = ${req.body.endDate || null},
