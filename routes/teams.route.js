@@ -13,6 +13,6 @@ router.get('/:teamId', auth.authenticate,teamsController.getSingleTeam)
 router.post('/create', nameValidator, 
     nameValidationResult, auth.authenticate,teamsController.createTeam)
 router.post('/:teamId/edit', auth.authenticate,teamsController.editTeam)
-router.delete('/:teamId/delete', auth.authenticate,teamsController.deleteTeam)
+router.post('/:teamId/delete', auth.authenticate,teamsController.deleteTeam)
 
 module.exports = router;
