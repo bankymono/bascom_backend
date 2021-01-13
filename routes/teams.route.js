@@ -4,7 +4,7 @@ const teamsController = require('../controllers/teamsController');
 const auth = require("../controllers/authController");
 const {nameValidationResult, nameValidator} = require('../validators/nameValidator');
 
-router.get('/', auth.authenticate, teamsController.getAllTeams)
+router.get('/all', auth.authenticate, teamsController.getAllTeams)
 router.post('/:teamId/addmember', auth.authenticate, teamsController.addMember)
 router.post('/:teamId/invite', auth.authenticate, teamsController.inviteMember)
 router.post('/:teamId/:memberId/remove', auth.authenticate, teamsController.removeMember)
