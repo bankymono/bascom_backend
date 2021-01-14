@@ -173,13 +173,6 @@ module.exports = {
     getSingleProject,
     addTeam,
     createProject,
-<<<<<<< HEAD
-    updateProject,
-    deleteProject
-    // getProjectTasks,
-    // createProjectTask
-=======
     editProject,
     deleteProject
->>>>>>> dd6fd3c0f0497e05f410933e17a47469a67d30a6
 }

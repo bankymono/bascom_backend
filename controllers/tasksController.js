@@ -148,12 +148,7 @@ const editTask = (req,res)=>{
     })
 }
 
-<<<<<<< HEAD
-
-//this will delete an existing task with set Id
-=======
 //this will edit an existing task with set Id
->>>>>>> dd6fd3c0f0497e05f410933e17a47469a67d30a6
 const deleteTask = (req,res)=>{
     
     connection.query(`SELECT createdBy from tasks where id = ${req.params.taskId}`, (err,resp)=>{

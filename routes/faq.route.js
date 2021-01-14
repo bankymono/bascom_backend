@@ -4,10 +4,10 @@ const faqController = require('../controllers/faqController')
 
 
 
-router.get('/all',faqController.getAllFAQ)
+router.get('/faqs',faqController.getAllFAQ)
 router.get('/:faqId',faqController.getSingleFAQ)
-router.post('/newFaq', faqController.createFAQ)
-router.put('/:faqId', faqController.updateFAQ)
+router.post('/create', faqController.createFAQ)
+router.put('/:faqId', faqController.editFAQ)
 router.delete('/:faqId',faqController.deleteFAQ)
 
 module.exports = router;
