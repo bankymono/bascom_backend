@@ -42,10 +42,11 @@ exports.userValidator = [
         .not()
         .isEmpty()
         .withMessage('Password is required!')
+        .isLength({min:8})
+        .withMessage('Password must be at least 8 characters long!')
         .matches(/\d/)
         .withMessage('Password must contain at least one number!')
         .matches(/\W/)
         .withMessage('Password must contain at least one character!')
-        .isLength({min:8})
-        .withMessage('Password must be at least 8 characters long!')
+        
 ]
