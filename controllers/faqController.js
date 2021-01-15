@@ -15,7 +15,11 @@ const getAllFAQ =(req,res)=>{
 
 /*###################### TO GET/READ A SINGLE FAQ #############*/
 const getSingleFAQ =(req,res)=>{
+<<<<<<< HEAD
     connection.query(`SELECT * from faq where id = ${req.user.data.faqId}`, (err,resp)=>{
+=======
+    connection.query(`SELECT * from faq where id = ${req.params.faqId}`, (err,resp)=>{
+>>>>>>> fc786568e565586587de8977c15df40bd9dc57fa
         if(err) return res.status(500).json({'message':'internal server error'});
         
         res.status(200).json({data:resp})
@@ -26,7 +30,11 @@ const getSingleFAQ =(req,res)=>{
 
 const createFAQ = (req,res)=>{
     connection.query(`insert into faq (question,answer,createdBy) values ('${req.body.question}',
+<<<<<<< HEAD
     '${req.body.answer}, ${req.user.data.id}`, (err,resp)=>{
+=======
+    '${req.body.answer}, ${req.user.data.id}`, (errq,resp)=>{
+>>>>>>> fc786568e565586587de8977c15df40bd9dc57fa
         
         if (errq) return res.status(500).json({message:"Internal server error"})
                         
