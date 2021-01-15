@@ -1,9 +1,11 @@
+const cors = require('cors')
 const express = require('express');
 const router = express.Router()
 const teamsController = require('../controllers/teamsController');
 const auth = require("../controllers/authController");
 const {nameValidationResult, nameValidator} = require('../validators/nameValidator');
 
+router.options("*", cors())
 router.get('/all', auth.authenticate, teamsController.getAllTeams)
 router.post('/:teamId/addmember', auth.authenticate, teamsController.addMember)
 router.post('/:teamId/invite', auth.authenticate, teamsController.inviteMember)

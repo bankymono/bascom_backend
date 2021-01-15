@@ -1,3 +1,4 @@
+const cors = require('cors')
 const express = require('express')
 const router = express.Router()
 const projectsController = require('../controllers/projectsController')
@@ -5,7 +6,7 @@ const tasksController = require('../controllers/tasksController')
 const auth = require("../controllers/authController");
 const {nameValidationResult, nameValidator} = require('../validators/nameValidator');
 
-
+router.options("*", cors())
 router.get('/all', auth.authenticate,auth.viewAllProjects,projectsController.getAllProjects)
 
 router.get('/userprojects/', auth.authenticate, projectsController.getProjects)

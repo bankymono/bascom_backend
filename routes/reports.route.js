@@ -1,3 +1,4 @@
+const cors = require('cors')
 const express = require('express')
 const router = express.Router()
 const reportsController = require('../controllers/reportsController')
@@ -16,7 +17,7 @@ var storage = multer.diskStorage({
 
 var upload = multer({ storage:storage})
 
-
+router.options("*", cors())
 router.get('/all', auth.authenticate,reportsController.getAllReports)
 router.get('/usrreports', auth.authenticate, reportsController.getReports)
 router.get('/:reportId', auth.authenticate, reportsController.getSingleReport)

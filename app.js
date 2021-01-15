@@ -10,8 +10,8 @@ const bodyParser = require('body-parser')
 
 const app = express()
 
-app.use(cors())
-app.use(bodyParser.json())
+
+app.use(bodyParser.json(),cors())
 app.use(express.static(path.join(__dirname,'public')))
 app.use('/users',require('./routes/users.route'))
 app.use('/projects',require('./routes/projects.route'))
