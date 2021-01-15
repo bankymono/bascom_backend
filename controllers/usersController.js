@@ -90,7 +90,7 @@ const signUp = (req,res,next)=>{
                         
                             // send mail to user for account verification
                             sendEmail(
-                                'Bascom Admin <bankymono@gmail.com>',
+                                'Bascom Admin <admin@bascom.com>',
                                 'User Registration Successful! Please, Activate Your Account!',
                                 `${req.body.email}`,
                                 `Hi ${req.body.firstName}, <br/>
@@ -101,7 +101,7 @@ const signUp = (req,res,next)=>{
 
                                 // response after sending mail
                                 (err3,info)=>{
-                                    if (err3) {return res.status(500).json({success:false,"message":err3})}
+                                    if (err3) {return res.status(500).json({success:false,"message":'internal server error'})}
                                     res.status(201).json({success:true, message:'Signup Sucessful! Please, check your mail and activate your account!'})
                                 }
                             )// ## mail sending logic ends here        
