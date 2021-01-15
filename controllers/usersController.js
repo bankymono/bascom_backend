@@ -13,7 +13,7 @@ const root = (req,res)=>{
 // Internal User registration controller
 const internalUserSignup = (req,res)=>{
     bcrypt.hash(req.body.password,10,(err,hash)=>{
-        if(err) throw err
+        if(err) return res.status(500).json({succes:false,message:"internal server error"})
 
         // res.send(req.body)
         connection.query(`insert into users (firstName,lastName, email, password, isEnabled) 
@@ -21,10 +21,11 @@ const internalUserSignup = (req,res)=>{
                 '${req.body.lastName}',
                 '${req.body.email}', 
                 '${hash}',true)`, (errq,resp)=>{
-                    if (errq) return res.status(422).json({error:"Email already exist"})
+                    if (errq) return res.status(500).json({succes:false,message:"Internal server error"})
+
                     connection.query(`INSERT INTO users_role(userId, roleId) VALUES (${resp.insertId},2)`,(err,resp)=>{
-                        if (err) return res.status(500).send('Internal error')
-                            res.json({message:'Successfully added internal user!'}) 
+                        if (err) return res.status(500).json({succes:false,message:"Internal server error"})
+                            res.json({succes:true,message:'Successfully added internal user!'}) 
                     })
         })
     })
@@ -33,29 +34,35 @@ const internalUserSignup = (req,res)=>{
 // Get all users
 const getUsers = (req,res)=>{
     connection.query("SELECT * from users order by dateCreated desc", (err,resp)=>{
+        if(err) return res.status(500).json({succes:false,message:"internal server error"})
+
+        if(resp.length < 1) return res.status(404).json({succes:false,message:"no user found"})
         // delete resp[0].password
         resp.map( user => delete user.password )
-            res.json({"users":resp})
+            res.json({success:true,data:resp})
     })
 }
 
 // Get single user with userID
 const getSingleUser = (req,res)=>{
     connection.query(`SELECT * from users where id = ${req.params.userId}`, (err,resp)=>{
+        if(err) return res.status(500).json({succes:false,message:"internal server error"})
+
+        if(resp.length < 1) return res.status(404).json({succes:false,message:"does not exist!"})
+
         delete resp[0].password
-        res.send(resp[0])
+        res.json({success:true, data:resp[0]})
     })
 }
-
 
 
 //###################### USER SIGNUP #############################################################
 const signUp = (req,res,next)=>{
     connection.query(`select * from users where email = '${req.body.email}'`, (err, resp)=>{
-        if(err) return res.status(500).json({message:"internal server error"})
+        if(err) return res.status(500).json({success:false,message:"internal server error"})
         if(resp.length < 1){
             bcrypt.hash(req.body.password,10, (errHash,hash)=>{
-                if(errHash) throw errHash
+                if(errHash) return res.status(500).json({success:false,message:"internal server error"})
 
                 //generate otpCode
                 const otpCode = randomstring.generate()
@@ -94,8 +101,8 @@ const signUp = (req,res,next)=>{
 
                                 // response after sending mail
                                 (err3,info)=>{
-                                    if (err3) {console.log(err3);return res.status(500).json({"message":'internal server error'})}
-                                    res.status(201).json({message:'Signup Sucessful! Please, check your mail and activate your account!'})
+                                    if (err3) {return res.status(500).json({success:false,"message":'internal server error'})}
+                                    res.status(201).json({success:true, message:'Signup Sucessful! Please, check your mail and activate your account!'})
                                 }
                             )// ## mail sending logic ends here        
                         })          
@@ -125,7 +132,7 @@ const login = (req,res,next)=>{
     // check if user exists in the database
     connection.query(`select * from users where email = '${req.body.email}'`, (err,resp)=>{
 
-        if (err) return res.status(500).json({message:'internal server error'});
+        if (err) return res.status(500).json({success:false, message:'internal server error'});
 
         // if email is not found
         if (resp.length < 1){
@@ -136,12 +143,12 @@ const login = (req,res,next)=>{
         if(resp[0].isEnabled == true){  // if email is found and account is activated
             
             // verify if password is correct
-            bcrypt.compare(req.body.password,resp[0].password,(errhash,success)=>{
+            bcrypt.compare(req.body.password,resp[0].password,(errhash,succeed)=>{
 
-                if(errhash) return res.status(500).json({message:'internal server error'});
+                if(errhash) return res.status(500).json({success:false,message:'internal server error'});
 
                 // if email is successfully confirmed
-                if(success == true){
+                if(succeed == true){
                     
                     // fetch user permissions from database
                     connection.query(`select permissionName 
@@ -153,7 +160,7 @@ const login = (req,res,next)=>{
                         on users.id = users_role.userId where users.id = ${resp[0].id}`,
                         (err, userPermissions) => {
                             // if there is error fetching data
-                            if (err) return res.status(500).json({message:'internal server error'});
+                            if (err) return res.status(500).json({success:false,message:'internal server error'});
 
                             // delete user password details
                             delete resp[0].password
@@ -179,7 +186,7 @@ const login = (req,res,next)=>{
                             };
 
                             // send user details
-                            return res.status(200).json({success:true,user:tokenData});
+                            return res.status(200).json({success:true,data:tokenData});
                         })
                 }else{ // if password is not verified
                     return res.status(404).json({success:false,message:"Invalid credentials!"}) 
@@ -187,7 +194,7 @@ const login = (req,res,next)=>{
             })
         }
         else{ // if email is not activated
-            res.status(401).json({message : `Account not activated! Please, check your mail for activation link.`});
+            res.status(401).json({success:false, message : `Account not activated! Please, check your mail for activation link.`});
         }          
     })
 }
@@ -198,7 +205,7 @@ const forgotPassword = (req,res,next) =>{
     
     connection.query(`select * from users where email = '${email}'`, (err1,resp1)=>{
         //check if query returns erroe
-        if (err1) return res.status(500).json({message:'internal server error'});
+        if (err1) return res.status(500).json({success:false, message:'internal server error'});
 
         // if email is not found
         if (resp1.length < 1){
@@ -245,7 +252,7 @@ const forgotPassword = (req,res,next) =>{
                                     if (err4) return res.status(500).json({"success":false,"message":'internal server error'})
                                 })
                                 // then inform the user of internal server error
-                                return res.status(500).json({"message":"internal server error"})
+                                return res.status(500).json({success:false, "message":"internal server error"})
                             }
 
                             res.status(200).json({success:true, message:'Email sent'})
@@ -264,14 +271,14 @@ const resetPassword = (req,res,next) =>{
    
     connection.query(`select * from users where resetPasswordToken = '${resetPasswordToken}'`,
      (err1,resp1)=>{
-        if (err1) return res.status(500).json({message:'internal server error'});
+        if (err1) return res.status(500).json({success:false, message:'internal server error'});
 
         // if email is not found
         if (resp1.length < 1){
             return res.status(400).json({success:false,message:"Invalid reset token"}) 
         }
         bcrypt.hash(req.body.password,10, (errHash,hash)=>{
-            if(errHash) return res.status(500).json({message:'internal server error'});
+            if(errHash) return res.status(500).json({success:false,message:'internal server error'});
 
             connection.query(`update users set password = '${hash}', resetPasswordToken=null
                  where id=${resp1[0].id}`,(err2,resp2)=>{
@@ -296,22 +303,22 @@ const activateAccount = (req,res) =>{
     const otpCode = Buffer.from(decodedOtpCode, 'base64').toString();
 
     connection.query(`SELECT email, otpCode, isEnabled FROM users WHERE id = ${userId}`, (err, resp) => {
-        if (err) { return res.status(422).json({message : 'Internal Error!'}); }
+        if (err) { return res.status(500).json({success:false, message : 'Internal server error!'}); }
         
         if (resp.length > 0) {
             if (resp[0].isEnabled == true) {
-                return res.status(200).json({message : 'Account already activated! Proceed to login'})
+                return res.status(200).json({success: false, message : 'Account already activated! Proceed to login'})
             }
             if (resp[0].otpCode == otpCode) {
                 connection.query(`UPDATE users SET isEnabled = true, otpCode = null WHERE id = ${userId}`, (err2, resp2) => {
                     if (err2) { return res.status(422).json({message : 'Internal error'}); }
-                    return res.status(201).json({message : 'Account activated! You may proceed to login'})
+                    return res.status(201).json({success:true, message : 'Account activated! You may proceed to login'})
                 });
             } else {
-                return res.status(401).json({message : 'Error validating account!please check the link again'})
+                return res.status(401).json({success:false, message : 'Error validating account!please check the link again'})
             }
         } else {
-            return res.status(404).json({message : 'No account found! Check Activation Link Again'})
+            return res.status(404).json({success:false, message : 'No account found! Check Activation Link Again'})
         }
     });
 }
