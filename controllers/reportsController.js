@@ -1,3 +1,4 @@
+require('dotenv').config()
 const connection = require('../models/db')
 
 
@@ -38,7 +39,7 @@ const getSingleReport = (req,res)=>{
     
 const saveReport = (req,res)=>{
     if(req.file == null) return res.status(400).send('invalid file format');
-    reporturl = `bascom-backend.herokuapp.com/${req.filePath}`
+    reporturl = `https://bascom-backend.herokuapp.com/${req.filePath}`
     connection.query(`insert into reports (name, description, reportUrl, generatedBy, projectId)
         values('${req.body.name}',
                 '${req.body.description}',
