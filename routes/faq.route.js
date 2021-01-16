@@ -7,7 +7,7 @@ router.options("*", cors())
 router.get('/faqs',faqController.getAllFAQ)
 router.get('/:faqId',faqController.getSingleFAQ)
 router.post('/create', faqController.createFAQ)
-router.put('/:faqId', faqController.editFAQ)
-router.delete('/:faqId',faqController.deleteFAQ)
+router.post('/:faqId/edit', faqController.editFAQ)
+router.post('/:faqId/delete',faqController.deleteFAQ)
 
 module.exports = router;

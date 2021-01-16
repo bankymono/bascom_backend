@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 const projectsController = require('../controllers/projectsController')
 const tasksController = require('../controllers/tasksController')
+const reportsController = require('../controllers/reportsController')
 const auth = require("../controllers/authController");
 const {nameValidationResult, nameValidator} = require('../validators/nameValidator');
 
@@ -14,6 +15,12 @@ router.get('/:projectId/tasks/', auth.authenticate, tasksController.getTasks)
 
 router.get('/userprojects/:projectId', auth.authenticate, projectsController.getSingleProject)
 router.get('/:projectId/tasks/:taskId', auth.authenticate,tasksController.getSingleTask)
+
+router.get('/:projectId/reports/', auth.authenticate, reportsController.getReports)
+router.get('/:projectId/reports/reportId', auth.authenticate, reportsController.getSingleReport)
+router.post('/:projectId/reports/save', auth.authenticate, reportsController.saveReport)
+router.post('/:projectId/reports/reportId/edit', auth.authenticate, reportsController.editReport)
+router.post('/:projectId/reports/reportId/delete', auth.authenticate, reportsController.deleteReport)
 
 router.post('/userprojects/:projectId/addteam', auth.authenticate, projectsController.addTeam)
 

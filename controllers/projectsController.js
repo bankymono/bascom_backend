@@ -6,7 +6,7 @@ const connection = require('../models/db')
 // fetches all projects - accessible only by an administrator
 const getAllProjects = (req,res)=>{
     connection.query(`SELECT * from projects`, (err,resp)=>{
-        if(err) return res.status(500).json({'message':'internal server error'});
+        if(err) return res.status(500).json({success:false, 'message':'internal server error'});
         
         if(resp.length < 1) return res.status(404).json({success:false, message:"No project found."})
         
@@ -18,10 +18,11 @@ const getAllProjects = (req,res)=>{
 const getProjects = (req,res)=>{
     // fetch from db
     connection.query(`SELECT * from projects where createdBy = ${req.user.data.id}`, (err,resp)=>{
-        if(err) return res.status(500).json({'message':'internal server error'});
+        if(err) return res.status(500).json({success:false, 'message':'internal server error'});
         
         if(resp.length < 1) return res.status(404).json({success:false, message:"No project found."})
-        res.status(200).json({data:resp})
+        
+        res.status(200).json({success:true, data:resp})
     })
 } // fetch user project ends here!
 
@@ -29,20 +30,20 @@ const getProjects = (req,res)=>{
 // get project by id
 const getSingleProject = (req,res)=>{
     connection.query(`SELECT * from projects where id = ${req.params.projectId}`, (err,resp)=>{
-        if(err) return res.status(500).json({message:'internal server error'});
+        if(err) return res.status(500).json({success:false, message:'internal server error'});
 
         // if no data returned, send status not found
-        if(resp.length < 1) return res.status(404).json({message:'Not found!'});
+        if(resp.length < 1) return res.status(404).json({success:false, message:'Project not found!'});
 
         // is the logged in user owner of the project?
-        if(resp[0].createdBy == req.user.data.id) return res.status(200).json({data:resp[0]})
+        if(resp[0].createdBy == req.user.data.id) return res.status(200).json({success:true, data:resp[0]})
         
         // does the logged in user have permission to view the project?
         if(req.user.data.permissions.some(permission => permission == "view_all_projects")) 
-            return res.status(200).json({data:resp[0]})
+            return res.status(200).json({success:true, data:resp[0]})
         
             // user not authorized to view project
-        res.status(403).json({message:'Unauthorized'});
+        res.status(403).json({success:false, message:'Unauthorized'});
     })
 }
 
@@ -92,7 +93,7 @@ const createProject = (req,res)=>{
                 ${req.body.statusId ||null})`, (err,resp)=>{
                     if (err) return res.status(400).json({success:false,message:'name or description cannot be empty'});
                     
-                    res.status(200).json({success:true,message:"successfully created!"})
+                    res.status(200).json({success:true,message:"successfully created!"});
         })
 }
      
@@ -102,9 +103,9 @@ const editProject = (req,res)=>{
 
     connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`, (err,resp)=>{
         // if error 
-        if(err) return res.status(500).json({message:'internal server error'});
+        if(err) return res.status(500).json({success:false, message:'internal server error'});
 
-        if(resp.length < 1) return res.status(404).json({message:'Not found!'});
+        if(resp.length < 1) return res.status(404).json({success:false,message:'Not found!'});
 
         if(req.user.data.id == resp[0].createdBy){
             connection.query(`UPDATE projects SET 
@@ -117,7 +118,7 @@ const editProject = (req,res)=>{
                 lastModified = '${d}',
                 modifiedBy = ${req.user.data.id}
                 WHERE id=${req.params.projectId}`, (err,resp)=>{
-                    if(err) return res.status(500).json({message:'internal server error'});
+                    if(err) return res.status(500).json({success: false, message:'internal server error'});
                     
                     res.status(200).json({success:true,message:"successfully updated!"})
             }) 
@@ -132,7 +133,7 @@ const editProject = (req,res)=>{
             lastModified = '${d}',
             modifiedBy = ${req.user.data.id}
             WHERE id=${req.params.projectId}`, (err,resp)=>{
-                if(err) return res.status(500).json({message:'internal server error'});
+                if(err) return res.status(500).json({success:false, message:'internal server error'});
                 
                 res.status(200).json({success:true,message:"successfully updated!"})
             })
@@ -146,19 +147,19 @@ const deleteProject = (req,res)=>{
 //  handling delete
 
     connection.query(`SELECT createdBy from projects where id = ${req.params.projectId}`, (err,resp)=>{
-        if(err) return res.status(500).json({message:'internal server error'});
+        if(err) return res.status(500).json({success:false, message:'internal server error'});
 
-        if(resp.length < 1) return res.status(404).json({message:'Not found!'});
+        if(resp.length < 1) return res.status(404).json({success:false, message:'Not found!'});
     
         if(req.user.data.id == resp[0].createdBy){
             connection.query(`DELETE FROM projects WHERE  id=${req.params.projectId}`, (err,resp)=>{
-                if(err) return res.status(500).json({message:'internal server error'});
+                if(err) return res.status(500).json({success:false, message:'internal server error'});
 
                 res.status(200).json({success:true,message:"successfully deleted"});
             })     
         }else if(req.user.data.permissions.some(permission => permission == "manage_project")){
             connection.query(`DELETE FROM projects WHERE  id=${req.params.projectId}`, (err,resp)=>{
-                if(err) return res.status(500).json({message:'internal server error'});
+                if(err) return res.status(500).json({success:false, message:'internal server error'});
 
                 res.status(200).json({success:true,message:"successfully deleted"})
             })

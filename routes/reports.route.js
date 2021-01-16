@@ -59,12 +59,11 @@ const upload = multer({
 
 router.options("*", cors())
 router.get('/all', auth.authenticate,reportsController.getAllReports)
-router.get('/userreports', auth.authenticate, reportsController.getReports)
-router.get('/:reportId', auth.authenticate, reportsController.getSingleReport)
+// router.get('/:reportId', auth.authenticate, reportsController.getSingleReport)
 // router.get('/:reportId/tasks', auth.authenticate, reportsController.getProjectTasks)
 // router.post('/:reportId/tasks', auth.authenticate, reportsController.createProjectTask)
-router.post('/save', upload.single('reportfile'), reportsController.saveReport)
-router.post('/:reportId', auth.authenticate, reportsController.editReport)
-router.post('/:reportId', auth.authenticate, reportsController.deleteReport)
+// router.post('/save', auth.authenticate, upload.single('reportfile'), reportsController.saveReport)
+// router.post('/:reportId', auth.authenticate, reportsController.editReport)
+// router.post('/:reportId', auth.authenticate, reportsController.deleteReport)
 
 module.exports = router
