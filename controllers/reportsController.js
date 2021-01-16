@@ -29,21 +29,21 @@ const getSingleReport = (req,res)=>{
     })
 }   
     
-const createReport = (req,res)=>{
-    console.log(req.file)
+const saveReport = (req,res)=>{
+    if(req.file == null) return res.status(400).send('invalid file format')
     connection.query(`insert into reports (name, description, reportUrl, generatedBy, projectId)
         values('${req.body.name}',
                 '${req.body.description}',
-                '${req.file.path}',
-                ${req.user.data.id},
-                ${req.body.projectId})`, (errq,resp)=>{
+                '${req.filePath}',
+                26,
+                3)`, (errq,resp)=>{
                     if (errq) {console.log(errq);res.send(errq)}
                     else{
                     res.send("report successfully saved")}
                 })
 }
     
-const updateReport = (req,res)=>{
+const editReport = (req,res)=>{
     const d = new Date().toISOString()
 
     connection.query(`SELECT createdBy from reports where id = ${req.params.reportId}`, (err,resp)=>{
@@ -86,8 +86,8 @@ module.exports = {
     getAllReports,
     getReports,
     getSingleReport,
-    createReport,
-    updateReport,
+    saveReport,
+    editReport,
     deleteReport,
     // getProjectTasks,
     // createProjectTask
