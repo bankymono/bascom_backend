@@ -1,5 +1,5 @@
 const connection = require('../models/db')
-const notificationController = require('./notificationController')    
+// const notificationController = require('./notificationController')    
 
 
 
@@ -15,34 +15,42 @@ const postFeedback = (req,res)=>{
                 'open',
                 '${req.body.feedbackEmail}',
                 '${req.body.feedbackTel}')`,(err,resp)=>{
-                if(err){
-                    res.status(400).send('Internal error!')
-                }if(resp){
-                    var notify = {
-                            "userId":26,
-                            "subject": req.body.subject,
-                            "message": req.body.content
-                            }
-                            console.log('haba',notify)
-            notificationController.logNotification(notify)
-                // console.log(res)
-        
-            res.status(200).send('We have received your feedback')
-        }
-        notificationController.getNotifications((val)=>{
-            console.log('the val',val)
-        })
+                    
+                    if(err) return res.status(500).json({success:false,'message':'internal server error'});
+
+                    // var notify = {
+                    //         "userId":req.user.data.id,
+                    //         "subject": req.body.subject,
+                    //         "message": req.body.content
+                    //         }
+            // notificationController.logNotification(notify,(err,resp) =>{
+
+            // })
+                        
+            // res.status(200).send('We have received your feedback')
+            res.status(200).json({success:true,message:'We have received your feedback'});
+        // notificationController.getNotifications((val)=>{
+        //     console.log('the val',val)
+        // })
     })
 }   
 }
     
 
 const getFeedbacks  = (req,res)=>{
-
+    connection.query(`SELECT * from feedback`, (err,resp)=>{
+        if(err) return res.status(500).json({success:false,'message':'internal server error'});
+    
+        res.status(200).json({success:true, data:resp}) 
+    })
 }
     
 const getSingleFeedback = (req,res)=>{
-
+    connection.query(`SELECT * from faq where id = ${req.params.feedbackId}`, (err,resp)=>{
+        if(err) return res.status(500).json({success:false,'message':'internal server error'});
+        
+        res.status(200).json({data:resp[0]})
+    })
 }
 
 

@@ -1,6 +1,6 @@
 var connection = require('../models/db')
 
-const logNotification = (notification)=>{
+const logNotification = (notification, cb)=>{
         if(notification.message == undefined || notification.subject == undefined){
             return new Error('please provide required details for notification')
         }else{
@@ -9,9 +9,6 @@ const logNotification = (notification)=>{
                     if(err){
                         return new Error(err)
                     }
-                    // console.log('the end',notify)// }else{
-                    //     cb('success')
-                    // }
             })
         }
 }

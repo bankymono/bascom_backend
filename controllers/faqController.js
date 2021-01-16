@@ -17,7 +17,7 @@ const getSingleFAQ =(req,res)=>{
     connection.query(`SELECT * from faq where id = ${req.params.faqId}`, (err,resp)=>{
         if(err) return res.status(500).json({success:false,'message':'internal server error'});
         
-        res.status(200).json({data:resp})
+        res.status(200).json({data:resp[0]})
     })
 } 
 
