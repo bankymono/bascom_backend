@@ -3,14 +3,21 @@ const connection = require('../models/db')
 
 const getAllReports = (req,res)=>{
     connection.query(`SELECT * from reports`, (err,resp)=>{
+        if(err) return res.status(500).json({'message':'internal server error'});
 
+        if(resp.length < 1) return res.status(404).json({success:false, message:"No report found."})
+
+        res.status(200).json({success:true, data:resp})
     })
 }
 
 const getReports = (req,res)=>{
     connection.query(`SELECT * from reports where generatedBy = ${req.user.data.id}`, (err,resp)=>{
-        if(err) throw err;
-        res.send(resp)
+        if(err) return res.status(500).json({'message':'internal server error'});
+
+        if(resp.length < 1) return res.status(404).json({success:false, message:"No report found."})
+        
+        res.status(200).json({success:true, data:resp})
     })
 }
     
@@ -30,11 +37,12 @@ const getSingleReport = (req,res)=>{
 }   
     
 const saveReport = (req,res)=>{
-    if(req.file == null) return res.status(400).send('invalid file format')
+    if(req.file == null) return res.status(400).send('invalid file format');
+    reporturl = `bascom-backend.herokuapp.com/${req.filePath}`
     connection.query(`insert into reports (name, description, reportUrl, generatedBy, projectId)
         values('${req.body.name}',
                 '${req.body.description}',
-                '${req.filePath}',
+                '${reporturl}',
                 26,
                 3)`, (errq,resp)=>{
                     if (errq) {console.log(errq);res.send(errq)}

@@ -8,7 +8,9 @@ const getAllProjects = (req,res)=>{
     connection.query(`SELECT * from projects`, (err,resp)=>{
         if(err) return res.status(500).json({'message':'internal server error'});
         
-        res.status(200).json({data:resp})
+        if(resp.length < 1) return res.status(404).json({success:false, message:"No project found."})
+        
+        res.status(200).json({success:true, data:resp})
     })
 }
 
@@ -18,7 +20,7 @@ const getProjects = (req,res)=>{
     connection.query(`SELECT * from projects where createdBy = ${req.user.data.id}`, (err,resp)=>{
         if(err) return res.status(500).json({'message':'internal server error'});
         
-        if(resp.length < 1) return res.status(404).json({message:"No project found."})
+        if(resp.length < 1) return res.status(404).json({success:false, message:"No project found."})
         res.status(200).json({data:resp})
     })
 } // fetch user project ends here!
