@@ -3,12 +3,12 @@ const express = require('express')
 const multer = require('multer');
 const uuid = require('uuid').v4;
 const path = require('path');
-const aws = require('aws-sdk');
-const multerS3 = require('multer-s3')
+
 
 const router = express.Router()
 const reportsController = require('../controllers/reportsController')
 const auth = require("../controllers/authController");
+
 
 // file filter
 const fileFilter = (req,file,cb)=>{
@@ -23,33 +23,26 @@ const fileFilter = (req,file,cb)=>{
   }
 }
 
-// s3 config
-const s3 = new aws.S3({
-  apiVersion:'2006-03-01'
-});
+const storage = multer.diskStorage({
+    destination:(req,file,cb)=>{
+        cb(null,'uploads')
+    },
+    filename:(req,file,cb)=>{
+              const ext = path.extname(file.originalname);
+              const id= uuid();
+              const fileuri = `${id}${ext}`
+              const filePath = `reports/${fileuri}`;
 
-// aws storage config
-aws.config.loadFromPath('./config.json')
+              req.filePath = filePath;
+
+              cb(null, `${filePath}`);
+
+    }
+})
+
 
 const upload = multer({
-    storage: multerS3({
-        s3: s3,
-        bucket: 'bascom-projects',
-        metadata:(req,file,cb)=>{
-            cb(null,{fieldName:file.fieldname});
-        },
-        key: (req,file,cb) =>{
-
-            const ext = path.extname(file.originalname);
-            const id= uuid();
-            const fileuri = `${id}${ext}`
-            const filePath = `https://bascom-projects.s3.amazonaws.com/${fileuri}`;
-
-            req.filePath = filePath;
-
-            cb(null, `${fileuri}`);
-        }
-    }),
+    storage: storage,
     fileFilter:fileFilter
 })
 

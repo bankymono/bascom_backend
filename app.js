@@ -13,6 +13,7 @@ const app = express()
 
 app.use(bodyParser.json(),cors())
 app.use(express.static(path.join(__dirname,'public')))
+app.use(express.static(path.join(__dirname,'uploads')))
 app.use('/users',require('./routes/users.route'))
 app.use('/projects',require('./routes/projects.route'))
 app.use('/tasks',require('./routes/tasks.route'))
