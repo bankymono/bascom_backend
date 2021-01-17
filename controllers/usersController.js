@@ -325,8 +325,6 @@ const activateAccount = (req,res) =>{
 
 
 
-
-
 const updateUser = (req,res)=>{
     if(req.body.password){
         bcrypt.hash(req.body.password,10,(err,hash)=>{
@@ -413,6 +411,20 @@ const deleteUser = (req,res)=>{
     })
 }
 
+const addProfilePicture = (req,res)=>{
+    if(req.file == null) return res.status(400).json({success:false, message:'invalid file format'});
+    
+    const imageurl = `${process.env.BASE_URL}/${req.filePath}`
+    
+    connection.query(`UPDATE users SET 
+                profilePictureUrl='${imageurl}' 
+                WHERE id=${req.user.data.id}`, (err,resp)=>{
+                    if(err) return res.status(500).json({success:false, message:'internal server error'});
+                    
+                    res.status(200).json({success:true,message:"successfully added profile picture"})
+            })
+}
+
 
 module.exports = {
     root,
@@ -425,6 +437,7 @@ module.exports = {
     forgotPassword,
     resetPassword,
     updateUser,
-    deleteUser
+    deleteUser,
+    addProfilePicture
 }
 

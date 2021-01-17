@@ -1,11 +1,55 @@
-const cors = require('cors')
-const express = require('express')
-const router = express.Router()
+const cors = require('cors');
+const express = require('express');
+const multer = require('multer');
+const uuid = require('uuid').v4;
+const path = require('path');
+
+
+const router = express.Router();
 const projectsController = require('../controllers/projectsController')
 const tasksController = require('../controllers/tasksController')
 const reportsController = require('../controllers/reportsController')
 const auth = require("../controllers/authController");
 const {nameValidationResult, nameValidator} = require('../validators/nameValidator');
+
+// file filter
+const fileFilter = (req,file,cb)=>{
+    if(file.mimetype == 'application/pdf' 
+      || file.mimetype == 'application/msword' 
+      || file.mimetype == 'text/csv'){
+        cb(null, true)
+    }else{
+      console.log(file)
+        cb(null, false)
+        req.file = null
+    }
+  }
+  
+  const storage = multer.diskStorage({
+      destination:(req,file,cb)=>{
+          cb(null,'uploads')
+      },
+      filename:(req,file,cb)=>{
+                const ext = path.extname(file.originalname);
+                const id= uuid();
+                const fileuri = `${id}${ext}`
+                const filePath = `reports/${fileuri}`;
+  
+                req.filePath = filePath;
+  
+                cb(null, `${filePath}`);
+  
+      }
+  })
+  
+  
+  const upload = multer({
+      storage: storage,
+      fileFilter:fileFilter
+  })
+
+
+
 
 router.options("*", cors())
 router.get('/all', auth.authenticate,auth.viewAllProjects,projectsController.getAllProjects)
@@ -17,8 +61,8 @@ router.get('/userprojects/:projectId', auth.authenticate, projectsController.get
 router.get('/:projectId/tasks/:taskId', auth.authenticate,tasksController.getSingleTask)
 
 router.get('/:projectId/reports/', auth.authenticate, reportsController.getReports)
-router.get('/:projectId/reports/reportId', auth.authenticate, reportsController.getSingleReport)
-router.post('/:projectId/reports/save', auth.authenticate, reportsController.saveReport)
+router.get('/:projectId/reports/reportId',  auth.authenticate, reportsController.getSingleReport)
+router.post('/:projectId/reports/save', auth.authenticate, upload.single('reportfile'), reportsController.saveReport)
 router.post('/:projectId/reports/reportId/edit', auth.authenticate, reportsController.editReport)
 router.post('/:projectId/reports/reportId/delete', auth.authenticate, reportsController.deleteReport)
 
