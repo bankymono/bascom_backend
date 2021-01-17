@@ -7,7 +7,7 @@ const auth = require("../controllers/authController");
 router.options("*", cors())
 router.post('/', feedbackController.postFeedback)
 router.get('/', feedbackController.getFeedbacks)
-router.get('/', feedbackController.getSingleFeedback)
+router.get('/:feedbackId', feedbackController.getSingleFeedback)
 // router.get('/',feedbackController.getProjects)
 
 module.exports = router
