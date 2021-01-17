@@ -32,7 +32,6 @@ const createFAQ = (req,res)=>{
                         res.status(200).json({success:true,message:"successfully created!"})
     })
     
-    
 }
 
 /*###################### TO UPDATE/PUT FAQs #############*/

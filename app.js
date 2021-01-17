@@ -21,6 +21,7 @@ app.use('/teams',require('./routes/teams.route'))
 app.use('/feedback',require('./routes/feedback.route'))
 app.use('/contactUs',require('./routes/contactUs.route'))
 app.use('/reports',require('./routes/reports.route'))
+app.use('/faqs',require('./routes/faq.route'))
 
 
 app.listen(process.env.PORT || 5000, ()=>{
