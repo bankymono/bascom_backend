@@ -5,7 +5,7 @@ const connection = require('../models/db')
 
 const postFeedback = (req,res)=>{
     if(req.body.content == undefined || req.body.subject == undefined){
-        res.status(400).send("Please provide feedback details")
+        res.status(400).status(400).json({success:false, message:"Please provide feedback details"})
     }else{
         
         connection.query(`insert into feedback(subject,content,status,feedbackEmail, feedbackTel)
@@ -46,7 +46,7 @@ const getFeedbacks  = (req,res)=>{
 }
     
 const getSingleFeedback = (req,res)=>{
-    connection.query(`SELECT * from faq where id = ${req.params.feedbackId}`, (err,resp)=>{
+    connection.query(`SELECT * from feedback where id = ${req.params.feedbackId}`, (err,resp)=>{
         if(err) return res.status(500).json({success:false,'message':'internal server error'});
         
         res.status(200).json({success:true, data:resp[0]})
